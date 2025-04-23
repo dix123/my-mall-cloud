@@ -24,15 +24,19 @@ public class CommonResult <T>{
         return new CommonResult<>(ErrorCode.SUCCESS.getCode(), msg, data);
     }
 
-    public static <F> CommonResult<F> fail(ErrorCode errorCode) {
+    public static <F> CommonResult<F> failed(ErrorCode errorCode) {
         return new CommonResult<>(errorCode.getCode(), errorCode.getMsg(), null);
     }
 
-    public static <F> CommonResult<F> fail(ErrorCode errorCode, String msg) {
+    public static <F> CommonResult<F> failed(ErrorCode errorCode, String msg) {
         return new CommonResult<>(errorCode.getCode(), msg, null);
     }
 
-    public static <F> CommonResult<F> fail(String msg) {
+    public static <F> CommonResult<F> failed(String msg) {
         return new CommonResult<>(ErrorCode.FAIL.getCode(), msg, null);
+    }
+
+    public static <F> CommonResult<F> validateFailed(String msg) {
+        return new CommonResult<>(ErrorCode.VALIDATE_FAIL.getCode(), msg, null);
     }
 }

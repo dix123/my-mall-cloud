@@ -1,0 +1,18 @@
+package com.my.mbg.controller;
+
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+/**
+ * <p>
+ * 会员登录记录 前端控制器
+ * </p>
+ *
+ * @author haole
+ * @since 2025-04-23
+ */
+@RestController
+@RequestMapping("/umsMemberLoginLog")
+public class UmsMemberLoginLogController {
+
+}
