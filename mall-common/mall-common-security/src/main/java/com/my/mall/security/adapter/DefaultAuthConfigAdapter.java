@@ -1,0 +1,44 @@
+package com.my.mall.security.adapter;
+
+import com.my.mall.security.config.FeignInsideAuthConfig;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+/**
+ * @Author: haole
+ * @Date: 2025/4/30
+ **/
+public class DefaultAuthConfigAdapter implements AuthConfigAdapter{
+    /**
+     * 内部直接调用接口，无需登录权限
+     */
+    private static final String FEIGN_INSIDER_URI = FeignInsideAuthConfig.FEIGN_INSIDE_PREFIX + "/insider/**";
+
+    /**
+     * 外部直接调用接口，无需登录权限 unwanted auth
+     */
+    private static final String EXTERNAL_URI = "/**/ua/**";
+
+    /**
+     * swagger
+     */
+    private static final String DOC_URI = "/v3/api-docs";
+
+    @Override
+    public List<String> pathPatterns() {
+        return Collections.singletonList("/*");
+    }
+
+    @Override
+    public List<String> excludePathPatterns(String... paths) {
+        List<String> arrayList = new ArrayList<>();
+        arrayList.add(DOC_URI);
+        arrayList.add(FEIGN_INSIDER_URI);
+        arrayList.add(EXTERNAL_URI);
+        arrayList.addAll(Arrays.asList(paths));
+        return arrayList;
+    }
+}

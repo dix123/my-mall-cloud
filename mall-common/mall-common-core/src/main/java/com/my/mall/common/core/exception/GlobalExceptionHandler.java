@@ -1,6 +1,6 @@
 package com.my.mall.common.core.exception;
 
-import com.my.mall.common.api.CommonResult;
+import com.my.mall.common.core.api.CommonResult;
 import org.springframework.validation.BindException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;

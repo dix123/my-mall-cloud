@@ -33,10 +33,10 @@ public class CommonResult <T>{
     }
 
     public static <F> CommonResult<F> failed(String msg) {
-        return new CommonResult<>(ErrorCode.FAIL.getCode(), msg, null);
+        return new CommonResult<>(ErrorCode.SHOW_FAIL.getCode(), msg, null);
     }
 
     public static <F> CommonResult<F> validateFailed(String msg) {
-        return new CommonResult<>(ErrorCode.VALIDATE_FAIL.getCode(), msg, null);
+        return new CommonResult<>(ErrorCode.CLIENT_ERROR.getCode(), msg, null);
     }
 }

@@ -1,6 +1,6 @@
 package com.my.mall.common.core.exception;
 
-import com.my.mall.common.api.ErrorCode;
+import com.my.mall.common.core.api.ErrorCode;
 import lombok.Data;
 
 /**
@@ -13,6 +13,10 @@ public class ApiException extends RuntimeException{
 
     public ApiException(ErrorCode errorCode) {
         super(errorCode.getMsg());
+        this.errorCode = errorCode;
+    }
+    public ApiException(String msg, ErrorCode errorCode) {
+        super(msg);
         this.errorCode = errorCode;
     }
 

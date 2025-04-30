@@ -21,7 +21,7 @@
         <module>mall-common-core</module>
         <module>mall-common-data</module>
         <module>mall-common-cache</module>
-        <module>mall-cmmon-security</module>
+        <module>mall-common-security</module>
     </modules>
 
 
