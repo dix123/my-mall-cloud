@@ -16,6 +16,12 @@ public class CommonResult <T>{
     private String msg;
     private T data;
 
+    public Boolean isSuccess() {
+        return ErrorCode.SUCCESS.equals(code);
+    }
+    public static <F> CommonResult<F> success() {
+        return new CommonResult<>(ErrorCode.SUCCESS.getCode(), ErrorCode.SUCCESS.getMsg(), null);
+    }
     public static <F> CommonResult<F> success(F data) {
         return new CommonResult<>(ErrorCode.SUCCESS.getCode(), ErrorCode.SUCCESS.getMsg(), data);
     }

@@ -5,6 +5,7 @@ import com.my.mall.security.bo.UserInfoInTokenBO;
 import com.my.mall.security.constant.AuthConstant;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 /**
@@ -21,5 +22,8 @@ public interface TokenFeignClient {
      */
     @GetMapping(AuthConstant.CHECK_TOKEN_URI)
     CommonResult<UserInfoInTokenBO> checkToken(@RequestParam("accessToken") String accessToken);
+
+    @PostMapping("/feign/token/logout")
+    CommonResult<Void> logout(Long id);
 
 }

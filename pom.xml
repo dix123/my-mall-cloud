@@ -16,6 +16,9 @@
         <module>mall-admin</module>
         <module>mall-auth</module>
         <module>mall-gateway</module>
+        <module>mall-api</module>
+        <module>mall-shork-link</module>
+        <module>mall-short-link-admin</module>
     </modules>
 
 
@@ -51,6 +54,8 @@
         <mall-common.version>1.0-SNAPSHOT</mall-common.version>
         <mall-mbg.version>1.0-SNAPSHOT</mall-mbg.version>
         <redis.version>3.3.0</redis.version>
+        <sharding.jdbc.version>5.3.2</sharding.jdbc.version>
+        <redisson.version>3.27.2</redisson.version>
     </properties>
     <dependencies>
         <dependency>
@@ -215,30 +220,6 @@
                 <artifactId>alipay-sdk-java</artifactId>
                 <version>${alipay-sdk.version}</version>
             </dependency>
-            <!-- Sa-Token 权限认证（Reactor响应式集成） -->
-            <dependency>
-                <groupId>cn.dev33</groupId>
-                <artifactId>sa-token-reactor-spring-boot3-starter</artifactId>
-                <version>${sa-token.version}</version>
-            </dependency>
-            <!-- Sa-Token 权限认证 -->
-            <dependency>
-                <groupId>cn.dev33</groupId>
-                <artifactId>sa-token-spring-boot3-starter</artifactId>
-                <version>${sa-token.version}</version>
-            </dependency>
-            <!-- Sa-Token 整合 Redis (使用jackson序列化方式) -->
-            <dependency>
-                <groupId>cn.dev33</groupId>
-                <artifactId>sa-token-redis-jackson</artifactId>
-                <version>${sa-token.version}</version>
-            </dependency>
-            <!-- Sa-Token 整合 jwt -->
-            <dependency>
-                <groupId>cn.dev33</groupId>
-                <artifactId>sa-token-jwt</artifactId>
-                <version>${sa-token.version}</version>
-            </dependency>
             <dependency>
                 <groupId>com.baomidou</groupId>
                 <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
@@ -249,12 +230,7 @@
                 <artifactId>mybatis-plus-generator</artifactId>
                 <version>${mybatis-plus.version}</version>
             </dependency>
-            <!--mall通用模块-->
-            <dependency>
-                <groupId>com.my.mall</groupId>
-                <artifactId>mall-common</artifactId>
-                <version>1.0-SNAPSHOT</version>
-            </dependency>
+
             <!--mall中MBG生成模块-->
             <dependency>
             <groupId>com.my.mbg</groupId>
@@ -267,7 +243,19 @@
                 <artifactId>spring-boot-starter-data-redis</artifactId>
                 <version>${redis.version}</version>
             </dependency>
+
+            <dependency>
+                <groupId>org.apache.shardingsphere</groupId>
+                <artifactId>shardingsphere-jdbc-core</artifactId>
+                <version>${sharding.jdbc.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.redisson</groupId>
+                <artifactId>redisson-spring-boot-starter</artifactId>
+                <version>${redisson.version}</version>
+            </dependency>
         </dependencies>
+
     </dependencyManagement>
 
     <build>

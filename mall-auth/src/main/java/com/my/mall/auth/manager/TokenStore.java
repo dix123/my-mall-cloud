@@ -68,6 +68,18 @@ public class TokenStore {
 
     }
 
+    public void logout(Long uid) {
+        UserInfoInTokenBO userInfoInTokenBO = new UserInfoInTokenBO();
+        userInfoInTokenBO.setId(uid);
+        String uidToAccessKey = getUidToAccessKey(userInfoInTokenBO);
+        String accessKeyArray = (String)redisTemplate.opsForValue().get(uidToAccessKey);
+        String[] array = accessKeyArray.split(StrUtil.COLON);
+        String accessKey = array[0];
+        String refreshKey = array[1];
+        redisTemplate.delete(getAccessTokenKey(accessKey));
+        redisTemplate.delete(getRefreshTokenKey(refreshKey));
+    }
+
     public UserInfoInTokenBO checkToken(String accessToken) {
         accessToken = decryptToken(accessToken);
         UserInfoInTokenBO userInfoInToken = (UserInfoInTokenBO) redisTemplate.opsForValue().get(accessToken);

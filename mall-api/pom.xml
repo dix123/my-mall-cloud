@@ -19,6 +19,7 @@
 
     <modules>
         <module>mall-api-auth</module>
+        <module>mall-api-shortlink</module>
     </modules>
 
 

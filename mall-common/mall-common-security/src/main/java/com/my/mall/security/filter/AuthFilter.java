@@ -2,11 +2,14 @@ package com.my.mall.security.filter;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
+import com.my.mall.api.auth.feign.TokenFeignClient;
 import com.my.mall.common.core.api.CommonResult;
 import com.my.mall.common.core.api.ErrorCode;
 import com.my.mall.common.core.handler.HttpHandler;
 import com.my.mall.common.core.util.IpHelper;
+import com.my.mall.security.AuthUserContext;
 import com.my.mall.security.adapter.AuthConfigAdapter;
+import com.my.mall.security.bo.UserInfoInTokenBO;
 import com.my.mall.security.config.FeignInsideAuthConfig;
 import com.my.mall.security.constant.AuthConstant;
 import jakarta.servlet.*;
@@ -37,6 +40,8 @@ public class AuthFilter implements Filter {
 
     @Autowired
     private AuthConfigAdapter authConfigAdapter;
+    @Autowired
+    private TokenFeignClient tokenFeignClient;
 
 
     @Override
@@ -72,8 +77,28 @@ public class AuthFilter implements Filter {
             httpHandler.printToWeb(CommonResult.failed(ErrorCode.IDEMPOTENT_TOKEN_NULL_ERROR));
             return;
         }
+        CommonResult<UserInfoInTokenBO> userInfoInTokenBOCommonResult = tokenFeignClient.checkToken(accessToken);
+        if (!userInfoInTokenBOCommonResult.isSuccess()) {
+            httpHandler.printToWeb(CommonResult.failed(ErrorCode.IDEMPOTENT_TOKEN_DELETE_ERROR));
+            return;
+        }
+        UserInfoInTokenBO userInfoInToken = userInfoInTokenBOCommonResult.getData();
+        if (!checkRbac(userInfoInToken, req.getRequestURI(), req.getMethod())) {
+            httpHandler.printToWeb(CommonResult.failed(ErrorCode.PERMISSION_DENY));
+            return;
+        }
+        try {
+            AuthUserContext.set(userInfoInToken);
+            filterChain.doFilter(req, resp);
+        } finally {
+            AuthUserContext.clean();
+        }
 
 
+    }
+
+    private boolean checkRbac(UserInfoInTokenBO userInfoInToken, String requestURI, String method) {
+        return true;
     }
 
     private boolean checkFeignRequest(HttpServletRequest req) {

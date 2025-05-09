@@ -25,6 +25,7 @@ public enum ErrorCode {
     IDEMPOTENT_TOKEN_NULL_ERROR("A000200", "幂等Token为空"),
     IDEMPOTENT_TOKEN_DELETE_ERROR("A000201", "幂等Token已被使用或失效"),
     FEIGN_AUTH_ERROR("A000202", "feign请求认证错误"),
+    PERMISSION_DENY("A000301", "没有指定权限"),
 
     // ========== 二级宏观错误码 系统请求操作频繁 ==========
     FLOW_LIMIT_ERROR("A000300", "当前系统繁忙，请稍后再试"),

@@ -6,6 +6,7 @@ import com.my.mall.common.core.api.CommonResult;
 import com.my.mall.common.core.api.ErrorCode;
 import com.my.mall.security.bo.UserInfoInTokenBO;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.calcite.avatica.proto.Common;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -27,5 +28,11 @@ public class TokenFiegnController implements TokenFeignClient {
             return CommonResult.failed(ErrorCode.IDEMPOTENT_TOKEN_DELETE_ERROR);
         }
         return CommonResult.success(userInfoInTokenBO);
+    }
+
+    @Override
+    public CommonResult<Void> logout(Long id) {
+        tokenStore.logout(id);
+        return CommonResult.success();
     }
 }
