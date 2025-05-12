@@ -1,6 +1,6 @@
 package com.my.mall.security.constant;
 
-import com.my.mall.security.config.FeignInsideAuthConfig;
+import com.my.mall.common.core.feign.FeignInsideAuthConfig;
 
 /**
  * @Author: haole

@@ -10,7 +10,7 @@ import com.my.mall.common.core.util.IpHelper;
 import com.my.mall.security.AuthUserContext;
 import com.my.mall.security.adapter.AuthConfigAdapter;
 import com.my.mall.security.bo.UserInfoInTokenBO;
-import com.my.mall.security.config.FeignInsideAuthConfig;
+import com.my.mall.common.core.feign.FeignInsideAuthConfig;
 import com.my.mall.security.constant.AuthConstant;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;

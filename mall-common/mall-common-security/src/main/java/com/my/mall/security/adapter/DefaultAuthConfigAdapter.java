@@ -1,6 +1,6 @@
 package com.my.mall.security.adapter;
 
-import com.my.mall.security.config.FeignInsideAuthConfig;
+import com.my.mall.common.core.feign.FeignInsideAuthConfig;
 
 import java.util.ArrayList;
 import java.util.Arrays;

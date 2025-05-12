@@ -1,26 +1,19 @@
-package com.my.mall.shortlink.entity;
+package com.my.mall.shortlink.dto.resp;
 
 import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableName;
-import com.my.mall.common.data.model.BaseDO;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Date;
 
 /**
  * @Author: haole
- * @Date: 2025/5/7
+ * @Date: 2025/5/12
  **/
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
-@TableName("t_link")
-@Builder
-public class LinkDO extends BaseDO {
+public class ShortLinkPageResp {
     /**
      * id
      */
@@ -74,12 +67,17 @@ public class LinkDO extends BaseDO {
     /**
      * 有效期
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private LocalDateTime validDate;
+    /**
+     * 创建时间
+     */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private LocalDateTime createTime;
 
     /**
      * 描述
      */
-    @TableField("`describe`")
     private String describe;
 
     /**
@@ -105,19 +103,18 @@ public class LinkDO extends BaseDO {
     /**
      * 今日PV
      */
-    @TableField(exist = false)
+
     private Integer todayPv;
 
     /**
      * 今日UV
      */
-    @TableField(exist = false)
     private Integer todayUv;
 
     /**
      * 今日UIP
      */
-    @TableField(exist = false)
+
     private Integer todayUip;
 
     /**

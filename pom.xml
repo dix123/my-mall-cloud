@@ -50,7 +50,7 @@
         <sa-token.version>1.37.0</sa-token.version>
         <mall-common.version>1.0-SNAPSHOT</mall-common.version>
         <mall-mbg.version>1.0-SNAPSHOT</mall-mbg.version>
-        <mybatis-plus.version>3.5.11</mybatis-plus.version>
+        <mybatis-plus.version>3.5.12</mybatis-plus.version>
         <mall-common.version>1.0-SNAPSHOT</mall-common.version>
         <mall-mbg.version>1.0-SNAPSHOT</mall-mbg.version>
         <redis.version>3.3.0</redis.version>
@@ -95,6 +95,13 @@
     </dependencies>
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>com.baomidou</groupId>
+                <artifactId>mybatis-plus-bom</artifactId>
+                <version>3.5.9</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
             <!--spring boot-->
             <dependency>
                 <groupId>org.springframework.boot</groupId>

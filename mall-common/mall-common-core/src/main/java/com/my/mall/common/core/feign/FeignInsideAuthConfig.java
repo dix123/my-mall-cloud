@@ -1,4 +1,4 @@
-package com.my.mall.security.config;
+package com.my.mall.common.core.feign;
 
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Value;
