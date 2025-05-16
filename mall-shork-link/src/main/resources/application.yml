@@ -20,8 +20,22 @@ spring:
     nacos:
       discovery:
         server-addr: 127.0.0.1:8848
+    sentinel:
+      transport:
+        dashboard: localhost:8080  # Sentinel 控制台地址
+        port: 8719  # 应用与 Sentinel 控制台通信的端口
+feign:
+  sentinel:
+    enabled: true
+
+short-link:
+  domain:
+    default: nurl.ink:8001
 
 mybatis-plus:
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
   mapper-locations: classpath:mapper/*.xml
+
+rocketmq:
+  name-server: 127.0.0.1:9876

@@ -44,4 +44,10 @@ public class GlobalExceptionHandler {
         }
         return CommonResult.validateFailed(msg);
     }
+
+    @ExceptionHandler(Exception.class)
+    public CommonResult handleException(Exception e) {
+
+        return CommonResult.failed(e.getMessage());
+    }
 }
