@@ -8,12 +8,14 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mall.common.cache.constant.ShortLinkCache;
 import com.my.mall.api.shortlink.dto.GroupShortLinkCountDTO;
+import com.my.mall.common.core.api.ErrorCode;
 import com.my.mall.common.core.exception.ApiException;
 import com.my.mall.common.rocketmq.config.RocketMqConstant;
 import com.my.mall.shortlink.constant.HttpConstant;
 import com.my.mall.shortlink.constant.ShortLinkConstant;
 import com.my.mall.shortlink.constant.ShortLinkGotoConstant;
 import com.my.mall.shortlink.dto.req.ShortLinkCreateReqDTO;
+import com.my.mall.shortlink.dto.req.ShortLinkStatsRecordDTO;
 import com.my.mall.shortlink.dto.resp.ShortLinkCreateRespDTO;
 import com.my.mall.shortlink.entity.LinkDO;
 import com.my.mall.shortlink.entity.ShortLinkGotoDO;
@@ -28,6 +30,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.rocketmq.client.producer.SendStatus;
 import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.checkerframework.checker.units.qual.C;
 import org.jsoup.Jsoup;
@@ -38,14 +41,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.messaging.support.GenericMessage;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -149,17 +155,43 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, LinkDO> i
                     .findFirst()
                     .orElseGet(() -> null);
             if (cookie == null) {
-                addResponseCookie(uvFirstFlag, uvId, fullShortUrl, response);
+                uvFirstFlag = true;
+                addResponseCookie(uvId, fullShortUrl, response);
             } else {
                 uvId = cookie.getValue();
                 Long add = stringRedisTemplate.opsForSet().add(String.format(ShortLinkCache.SHORT_LINK_UV_STATUS_KEY, fullShortUrl), uvId);
                 uvFirstFlag = add !=null && add > 0;
             }
+        } else {
+            uvFirstFlag = true;
+            addResponseCookie(uvId, fullShortUrl, response);
+        }
+        String ip = LinkUtil.getActualIp(request);
+        String os = LinkUtil.getOs(request);
+        String browser = LinkUtil.getBrowser(request);
+        String network = LinkUtil.getNetwork(request);
+        String device = LinkUtil.getDevice(request);
+        Long uipAdded = stringRedisTemplate.opsForSet().add(String.format(ShortLinkCache.SHORT_LINK_UIP_STATUS_KEY, ip));
+        boolean uipFirstFlag = uipAdded != null && uipAdded > 0L;
+        ShortLinkStatsRecordDTO shortLinkStatsRecordDTO = ShortLinkStatsRecordDTO.builder()
+                .fullShortUrl(fullShortUrl)
+                .uipFirstFlag(uipFirstFlag)
+                .uv(uvId)
+                .uvFirstFlag(uvFirstFlag)
+                .os(os)
+                .ip(ip)
+                .browser(browser)
+                .network(network)
+                .device(device)
+                .currentDate(LocalDateTime.now())
+                .build();
+        SendStatus sendStatus = shortLinkStatusTemplate.syncSend(RocketMqConstant.SHORT_LINK_STATUS_TOPIC, new GenericMessage<>(shortLinkStatsRecordDTO)).getSendStatus();
+        if (!Objects.equals(sendStatus, SendStatus.SEND_OK)) {
+            throw new ApiException(ErrorCode.SERVICE_ERROR);
         }
     }
 
-    private void addResponseCookie(boolean uvFirstFlag, String uvID, String fullShortUrl,  HttpServletResponse response) {
-        uvFirstFlag = true;
+    private void addResponseCookie(String uvID, String fullShortUrl,  HttpServletResponse response) {
         uvID = UUID.fastUUID().toString();
         Cookie cookie = new Cookie(ShortLinkConstant.SHORT_LINK_UV_COOKIE_NAME, uvID);
         cookie.setMaxAge(ShortLinkConstant.SHORT_LINK_UV_COOKIE_LIVE_TIME);

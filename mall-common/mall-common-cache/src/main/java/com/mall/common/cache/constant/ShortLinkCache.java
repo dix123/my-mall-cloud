@@ -16,5 +16,6 @@ public interface ShortLinkCache {
     /**
      * uv统计key
      */
-    String SHORT_LINK_UV_STATUS_KEY = "short-link_uv_status_key:%s";
+    String SHORT_LINK_UV_STATUS_KEY = "short-link:uv:status:key:%s";
+    String SHORT_LINK_UIP_STATUS_KEY = "short-link:uip:status:key:%s";
 }
