@@ -5,22 +5,19 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.mall.common.cache.constant.ShortLinkCache;
-import com.my.mall.common.data.model.BaseDO;
+import com.my.mall.common.core.constant.ShortLinkCache;
+import com.my.mall.api.shortlink.dto.resp.ShortLinkPageResp;
 import com.my.mall.shortlink.constant.HttpConstant;
-import com.my.mall.shortlink.dto.req.RecycleRemoveReqDTO;
-import com.my.mall.shortlink.dto.req.SaveRecycleReqDTO;
-import com.my.mall.shortlink.dto.req.ShortLinkPageReqDTO;
-import com.my.mall.shortlink.dto.req.ShortLinkRecoverReqDTO;
-import com.my.mall.shortlink.dto.resp.ShortLinkPageResp;
-import com.my.mall.shortlink.entity.LinkDO;
+import com.my.mall.api.shortlink.dto.req.RecycleRemoveReqDTO;
+import com.my.mall.api.shortlink.dto.req.SaveRecycleReqDTO;
+import com.my.mall.api.shortlink.dto.req.ShortLinkPageReqDTO;
+import com.my.mall.api.shortlink.dto.req.ShortLinkRecoverReqDTO;
+import com.my.mall.common.data.entity.LinkDO;
 import com.my.mall.shortlink.mapper.RecycleMapper;
 import com.my.mall.shortlink.service.RecycleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 /**
  * @Author: haole
@@ -51,7 +48,7 @@ public class RecycleServiceImpl extends ServiceImpl<RecycleMapper, LinkDO> imple
 
     @Override
     public IPage<ShortLinkPageResp> pageShortLink(ShortLinkPageReqDTO param) {
-        IPage<LinkDO> linkDOIPage = recycleMapper.pageRecycle(param.getGids());
+        IPage<LinkDO> linkDOIPage = baseMapper.pageRecycle(param);
         return linkDOIPage.convert(each -> {
             ShortLinkPageResp resp = BeanUtil.toBean(each, ShortLinkPageResp.class);
             resp.setDomain(HttpConstant.PREFIX + resp.getDomain());
@@ -70,7 +67,7 @@ public class RecycleServiceImpl extends ServiceImpl<RecycleMapper, LinkDO> imple
                 .enableStatus(1)
                 .build();
         baseMapper.update(build, wrapper);
-        stringRedisTemplate.delete(String.format(ShortLinkCache.SHORT_LINK_IS_NULL_KEY, param.getFullShortUrl()));
+        stringRedisTemplate.opsForSet().remove(ShortLinkCache.SHORT_LINK_IS_NULL_KEY, param.getFullShortUrl());
     }
 
     @Override

@@ -6,7 +6,10 @@ package com.my.mall.common.core.api;
  * @Date: 2025/4/22
  **/
 public enum ErrorCode {
-    SUCCESS("000000", "success"),
+    /**
+     * 成功
+     */
+    SUCCESS("0", "success"),
     SHOW_FAIL("000001", "show_fail_msg"),
     // ========== 一级宏观错误码 客户端错误 ==========
     CLIENT_ERROR("A000001", "用户端错误"),
@@ -20,6 +23,11 @@ public enum ErrorCode {
     PASSWORD_VERIFY_ERROR("A000120", "密码校验失败"),
     PASSWORD_SHORT_ERROR("A000121", "密码长度不够"),
     PHONE_VERIFY_ERROR("A000151", "手机格式校验失败"),
+
+    /**
+     * 无效短链接
+     */
+    NULL_SHORT_URL("A000201", "无效短链接"),
 
     // ========== 二级宏观错误码 系统请求缺少幂等Token ==========
     IDEMPOTENT_TOKEN_NULL_ERROR("A000200", "幂等Token为空"),

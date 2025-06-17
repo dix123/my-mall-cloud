@@ -1,10 +1,11 @@
 package com.my.mall.shortlink.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.my.mall.api.shortlink.dto.GroupShortLinkCountDTO;
-import com.my.mall.shortlink.entity.LinkDO;
+import com.my.mall.api.shortlink.dto.req.ShortLinkPagesReqDto;
+import com.my.mall.common.data.entity.LinkDO;
 import feign.Param;
-import org.apache.calcite.adapter.java.Map;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
@@ -20,7 +21,7 @@ public interface ShortLinkMapper extends BaseMapper<LinkDO> {
      *
      * @return
      */
-    List<GroupShortLinkCountDTO> listGroupShortLinkCount(@Param("gids") List<String> gisd);
+    List<GroupShortLinkCountDTO> listGroupShortLinkCount(@Param("gids") List<String> gids);
 
     /**
      * 短连接自增
@@ -35,4 +36,11 @@ public interface ShortLinkMapper extends BaseMapper<LinkDO> {
                         @Param("totalPv") Integer totalPv,
                         @Param("totalUv") Integer totalUv,
                         @Param("totalUip") Integer totalUip);
+
+    /**
+     * 分页查询短链接
+     * @param param
+     * @return
+     */
+    IPage<LinkDO> pageShortLink(ShortLinkPagesReqDto param);
 }

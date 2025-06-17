@@ -2,12 +2,12 @@ package com.my.mall.shortlink.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.my.mall.shortlink.dto.req.RecycleRemoveReqDTO;
-import com.my.mall.shortlink.dto.req.SaveRecycleReqDTO;
-import com.my.mall.shortlink.dto.req.ShortLinkPageReqDTO;
-import com.my.mall.shortlink.dto.req.ShortLinkRecoverReqDTO;
-import com.my.mall.shortlink.dto.resp.ShortLinkPageResp;
-import com.my.mall.shortlink.entity.LinkDO;
+import com.my.mall.api.shortlink.dto.req.RecycleRemoveReqDTO;
+import com.my.mall.api.shortlink.dto.req.SaveRecycleReqDTO;
+import com.my.mall.api.shortlink.dto.req.ShortLinkPageReqDTO;
+import com.my.mall.api.shortlink.dto.req.ShortLinkRecoverReqDTO;
+import com.my.mall.api.shortlink.dto.resp.ShortLinkPageResp;
+import com.my.mall.common.data.entity.LinkDO;
 
 /**
  * @Author: Base

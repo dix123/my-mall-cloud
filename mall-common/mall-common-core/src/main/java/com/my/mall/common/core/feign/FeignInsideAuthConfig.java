@@ -20,10 +20,10 @@ public class FeignInsideAuthConfig {
 
     public static final String FEIGN_INSIDE_PREFIX = "/feign";
 
-    @Value("${key}")
+//    @Value("${key}")
     private String key;
-    @Value("${secret}")
+//    @Value("${secret}")
     private String secret;
-    @Value("#{'${ips}'.split(',')}")
+//    @Value("#{'${ips}'.split(',')}")
     private List<String> ips;
 }

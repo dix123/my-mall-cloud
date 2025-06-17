@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @TableName("t_group_unique")
 @Builder
-public class GroupUniqueDO extends BaseDO {
+public class GroupUniqueDO{
     private Long id;
     private String gid;
 }

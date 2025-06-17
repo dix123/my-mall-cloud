@@ -22,6 +22,12 @@
             <groupId>com.my.mall</groupId>
             <artifactId>mall-common-data</artifactId>
             <version>1.0-SNAPSHOT</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>error_prone_annotations</artifactId>
+                    <groupId>com.google.errorprone</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.my.mall</groupId>
@@ -34,6 +40,7 @@
             <artifactId>mall-api-auth</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
+
     </dependencies>
 
 

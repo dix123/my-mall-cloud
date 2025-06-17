@@ -1,11 +1,14 @@
 package com.my.mall.shortlink.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.my.mall.api.shortlink.dto.req.ShortLinkStatsReqDTO;
+import com.my.mall.shortlink.bo.ShortLinkLocalStatsBO;
 import com.my.mall.shortlink.entity.LinkLocaleStatsDO;
-import org.apache.calcite.adapter.java.Map;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 /**
  * @Author: Base
@@ -22,4 +25,18 @@ public interface LinkLocalStatsMapper extends BaseMapper<LinkLocaleStatsDO> {
             "VALUES( #{linkLocaleStats.fullShortUrl}, #{linkLocaleStats.date}, #{linkLocaleStats.cnt}, #{linkLocaleStats.country}, #{linkLocaleStats.province}, #{linkLocaleStats.city}, #{linkLocaleStats.adcode}, NOW(), NOW(), 0) " +
             "ON DUPLICATE KEY UPDATE cnt = cnt +  #{linkLocaleStats.cnt};")
     void shortLinkLocaleState(@Param("linkLocaleStats") LinkLocaleStatsDO linkLocaleStatsDO);
+
+    /**
+     * 展示短链接的城市访问信息
+     * @param param
+     * @return
+     */
+    List<ShortLinkLocalStatsBO> listLocalStatsByShortLink(ShortLinkStatsReqDTO param);
+
+    /**
+     * 展示短链接的城市访问信息
+     * @param param
+     * @return
+     */
+    List<ShortLinkLocalStatsBO> listLocalStatsByGroup(ShortLinkStatsReqDTO param);
 }

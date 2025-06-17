@@ -27,6 +27,24 @@ public class DefaultAuthConfigAdapter implements AuthConfigAdapter{
      */
     private static final String DOC_URI = "/v3/api-docs";
 
+    /**
+     * 注册
+     */
+    private static final String REGISTER = "/api/short-link/admin/v1/user";
+    /**
+     * 用户是否存在
+     */
+    private static final String HAS_USER = "/api/short-link/admin/v1/user/has-username";
+
+    private static final String LOGIN = "/api/short-link/admin/v1/user/login";
+
+    private static final String GOTO = "localhost";
+
+    @Override
+    public String unCheck() {
+        return GOTO;
+    }
+
     @Override
     public List<String> pathPatterns() {
         return Collections.singletonList("/*");
@@ -38,6 +56,9 @@ public class DefaultAuthConfigAdapter implements AuthConfigAdapter{
         arrayList.add(DOC_URI);
         arrayList.add(FEIGN_INSIDER_URI);
         arrayList.add(EXTERNAL_URI);
+        arrayList.add(REGISTER);
+        arrayList.add(HAS_USER);
+        arrayList.add(LOGIN);
         arrayList.addAll(Arrays.asList(paths));
         return arrayList;
     }

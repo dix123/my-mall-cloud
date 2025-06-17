@@ -1,0 +1,53 @@
+server:
+  port: 8002
+  http:
+    max-header-size: 64KB
+
+spring:
+  application:
+    name: short-link-project
+  datasource:
+    driver-class-name: org.apache.shardingsphere.driver.ShardingSphereDriver
+    url: jdbc:shardingsphere:classpath:shardingsphere-config-${database.env:dev}.yaml
+  data:
+    redis:
+      host: 192.168.220.128
+      port: 6379
+      password: 123456
+  mvc:
+    view:
+      prefix: /templates/
+      suffix: .html
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 192.168.220.128:8848
+    sentinel:
+      transport:
+        dashboard: 192.168.220.128:8080  # Sentinel 控制台地址
+        port: 8719  # 应用与 Sentinel 控制台通信的端口
+feign:
+  sentinel:
+    enabled: true
+  inside:
+    key: haole
+    secret: 114514
+    ips:
+
+short-link:
+  domain:
+    default: localhost:8002
+    white-list:
+      enable: true
+      domain:
+        - www.bilibili.com
+        - blog.51cto.com
+
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    map-underscore-to-camel-case: true
+  mapper-locations: classpath:mapper/*.xml
+
+rocketmq:
+  name-server: 192.168.220.128:9876

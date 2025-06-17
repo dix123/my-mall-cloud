@@ -7,6 +7,7 @@ import org.apache.rocketmq.spring.support.RocketMQMessageConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
@@ -14,9 +15,9 @@ import org.springframework.context.annotation.Import;
  * @Author: haole
  * @Date: 2025/5/16
  **/
+@RefreshScope
 @Configuration
 @Import({RocketMQAutoConfiguration.class})
-@RefreshScope
 public class RocketMqAdapter {
 
     @Autowired

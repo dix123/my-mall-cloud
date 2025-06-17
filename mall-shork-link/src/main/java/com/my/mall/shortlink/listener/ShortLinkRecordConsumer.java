@@ -1,16 +1,19 @@
 package com.my.mall.shortlink.listener;
 
-import cn.hutool.core.annotation.Link;
-import cn.hutool.core.date.LocalDateTimeUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.my.mall.common.core.constant.ShortLinkCache;
+import com.my.mall.api.shortlink.dto.req.entity.LinkAccessLogsDO;
 import com.my.mall.common.rocketmq.config.RocketMqConstant;
 import com.my.mall.shortlink.dto.req.ShortLinkStatsRecordDTO;
 import com.my.mall.shortlink.entity.*;
 import com.my.mall.shortlink.mapper.*;
 import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
 import org.apache.rocketmq.spring.core.RocketMQListener;
+import org.redisson.api.RLock;
+import org.redisson.api.RReadWriteLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -45,6 +48,8 @@ public class ShortLinkRecordConsumer implements RocketMQListener<ShortLinkStatsR
     private LinkStatsTodayMapper linkStatsTodayMapper;
     @Autowired
     private ShortLinkMapper shortLinkMapper;
+    @Autowired
+    private RedissonClient redissonClient;
 
     @Override
     public void onMessage(ShortLinkStatsRecordDTO shortLinkStatsRecordDTO) {
@@ -52,7 +57,15 @@ public class ShortLinkRecordConsumer implements RocketMQListener<ShortLinkStatsR
         LambdaQueryWrapper<ShortLinkGotoDO> wrapper = Wrappers.lambdaQuery(ShortLinkGotoDO.class)
                 .eq(ShortLinkGotoDO::getFullShortUrl, fullShortUrl);
         ShortLinkGotoDO shortLinkGotoDO = shortLinkGotoMapper.selectOne(wrapper);
-        String gid = shortLinkGotoDO.getGid();
+        RReadWriteLock readWriteLock = redissonClient.getReadWriteLock(String.format(ShortLinkCache.GID_UPDATE_LOCK_KEY, fullShortUrl));
+        RLock readLock = readWriteLock.readLock();
+        readLock.lock();
+        try {
+            String gid = shortLinkGotoDO.getGid();
+            shortLinkMapper.incrementStats(gid, fullShortUrl, 1, shortLinkStatsRecordDTO.getUvFirstFlag() ? 1 : 0, shortLinkStatsRecordDTO.getUipFirstFlag() ? 1 : 0);
+        } finally {
+            readLock.unlock();
+        }
         LocalDateTime currentDate = shortLinkStatsRecordDTO.getCurrentDate();
         int hour = currentDate.getHour();
         DayOfWeek week = currentDate.getDayOfWeek();
@@ -66,6 +79,9 @@ public class ShortLinkRecordConsumer implements RocketMQListener<ShortLinkStatsR
                 .hour(hour)
                 .weekday(weekValue)
                 .build();
+        linkAccessStatsDO.setCreateTime(LocalDateTime.now());
+        linkAccessStatsDO.setUpdateTime(LocalDateTime.now());
+        linkAccessStatsDO.setDelFlag(0);
         linkAccessStatsMapper.updateRecord(linkAccessStatsDO);
         //更新地区信息
         String province = "未知";
@@ -119,8 +135,9 @@ public class ShortLinkRecordConsumer implements RocketMQListener<ShortLinkStatsR
                 .locale(StrUtil.join("-", "中国", province, city))
                 .fullShortUrl(fullShortUrl)
                 .build();
+        linkAccessLogsDO.setCreateTime(LocalDateTime.now());
+        linkAccessLogsDO.setUpdateTime(LocalDateTime.now());
         linkAccessLogsMapper.insert(linkAccessLogsDO);
-        shortLinkMapper.incrementStats(gid, fullShortUrl, 1, shortLinkStatsRecordDTO.getUvFirstFlag() ? 1 : 0, shortLinkStatsRecordDTO.getUipFirstFlag() ? 1 : 0);
         LinkStatsTodayDO linkStatsTodayDO = LinkStatsTodayDO.builder()
                 .todayPv(1)
                 .todayUv(shortLinkStatsRecordDTO.getUvFirstFlag() ? 1 : 0)

@@ -21,7 +21,7 @@ public class RocketMqConfig {
     private RocketMqAdapter rocketMqAdapter;
 
     @Lazy
-    @Bean(destroyMethod = "destory")
+    @Bean(destroyMethod = "destroy")
     public RocketMQTemplate shortLinkStatusTemplate() {
         return rocketMqAdapter.getTopicByName(RocketMqConstant.SHORT_LINK_STATUS_TOPIC);
     }

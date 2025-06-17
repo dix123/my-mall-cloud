@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Licensed to the Apache Software Foundation (ASF) under one or more
+  ~ contributor license agreements.  See the NOTICE file distributed with
+  ~ this work for additional information regarding copyright ownership.
+  ~ The ASF licenses this file to You under the Apache License, Version 2.0
+  ~ (the "License"); you may not use this file except in compliance with
+  ~ the License.  You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.my.mall.shortlink.mapper.LinkAccessLogsMapper">
+
+    <select id="listSumStatsByShortLink" resultType="com.my.mall.shortlink.bo.ShortLinkSumStatsBO">
+        SELECT
+            count(user) as pv,
+            count(distinct user) as uv,
+            count(DISTINCT ip) as uip
+        FROM t_link_access_logs
+        WHERE
+            full_short_url = #{fullShortUrl}
+            AND del_flag = 0
+            AND create_time BETWEEN #{startDate} AND #{endDate}
+        GROUP BY full_short_url
+    </select>
+
+    <select id="listSumStatsByGroup" resultType="com.my.mall.shortlink.bo.ShortLinkSumStatsBO">
+        SELECT
+            count(user) as pv,
+            count(distinct user) as uv,
+            count(DISTINCT ip) as uip
+        FROM t_link_access_logs t1, t_link t2
+        WHERE
+            gid = #{gid}
+          AND t1.full_short_url = t2.full_short_url
+          AND t1.del_flag = 0
+          AND t1.create_time BETWEEN #{startDate} AND #{endDate}
+    </select>
+
+    <select id="listIpStats" resultType="com.my.mall.api.shortlink.dto.resp.resp.ShortLinkIpStatsRespDTO">
+        SELECT
+            ip,
+            COUNT(ip) as cnt
+        FROM t_link_access_logs
+        WHERE full_short_url = #{fullShortUrl}
+            AND del_flag = 0
+            AND create_time BETWEEN #{startDate} AND #{endDate}
+        GROUP BY
+            ip
+        LIMIT 5
+    </select>
+
+    <select id="listIpStatsByGroup" resultType="com.my.mall.api.shortlink.dto.resp.resp.ShortLinkIpStatsRespDTO">
+        SELECT
+            ip,
+            COUNT(ip) as cnt
+        FROM t_link_access_logs t1, t_link t2
+        WHERE gid = #{gid}
+          AND t1.full_short_url = t2.full_short_url
+          AND t1.del_flag = 0
+          AND t1.create_time BETWEEN #{startDate} AND #{endDate}
+        GROUP BY
+            ip
+        LIMIT 5
+    </select>
+
+    <select id="listUvTypeStatsByShortLink" resultType="com.my.mall.shortlink.bo.ShortLinkUvTypeBO">
+        SELECT
+            sum(oldUser) AS oldUserCount,
+            SUM(newUser) AS newUserCount
+        FROM
+            (
+                SELECT
+                    CASE WHEN COUNT(DISTINCT DATE(create_time)) > 1 THEN 1 ELSE 0 END AS oldUser,
+                    CASE WHEN COUNT(DISTINCT  DATE(create_time)) = 1 AND MAX(create_time) between #{startDate} AND #{endDate} THEN 1 ELSE 0 END AS newUser
+                FROM t_link_access_logs
+                WHERE full_short_url = #{fullShortUrl}
+                    AND del_flag = 0
+                GROUP BY
+                    user
+            ) AS user_count
+    </select>
+
+    <select id="listUvTypeStatsByGroup" resultType="com.my.mall.shortlink.bo.ShortLinkUvTypeBO">
+        SELECT
+        sum(oldUser) AS oldUserCount,
+        SUM(newUser) AS newUserCount
+        FROM
+        (
+        SELECT
+        CASE WHEN COUNT(DISTINCT DATE(t1.create_time)) > 1 THEN 1 ELSE 0 END AS oldUser,
+        CASE WHEN COUNT(DISTINCT  DATE(t1.create_time)) = 1 AND MAX(t1.create_time) between #{startDate} AND  #{endDate} THEN 1 ELSE 0 END AS newUser
+        FROM t_link_access_logs t1, t_link t2
+        WHERE gid = #{gid}
+        AND t1.full_short_url = t2.full_short_url
+        AND t1.del_flag = 0
+        GROUP BY
+        user
+        ) AS user_count
+    </select>
+
+    <select id="getUserType" resultType="com.my.mall.shortlink.bo.UserTypeBO">
+        SELECT
+            user AS user,
+            CASE WHEN MIN(create_time) BETWEEN #{startDate} AND #{endDate} THEN '新访客' ELSE '老访客' END AS type
+        FROM t_link_access_logs
+        WHERE full_short_url = #{fullShortUrl}
+            AND create_time BETWEEN #{startDate} AND #{endDate}
+            AND user in
+            <foreach collection="userSet" item="item" open="(" close=")" separator="," index="index">
+                #{item}
+            </foreach>
+        GROUP BY
+            user
+    </select>
+
+    <select id="getAccessLogByGroup" resultType="com.my.mall.api.shortlink.dto.req.entity.LinkAccessLogsDO">
+        SELECT *
+        FROM
+            t_link t1, t_link_access_logs t2
+        WHERE t2.full_short_url = t1.full_short_url
+            AND t1.gid = #{gid}
+            AND t2.create_time BETWEEN #{startDate} AND #{endDate}
+            AND t2.del_flag = 0
+        ORDER BY
+            t2.create_time desc
+    </select>
+
+    <select id="getGroupUserType" resultType="com.my.mall.shortlink.bo.UserTypeBO">
+        SELECT
+        user,
+        CASE WHEN MIN(t1.create_time) BETWEEN #{startDate} AND #{endDate} THEN '新访客' ELSE '老访客' END AS type
+        FROM t_link_access_logs t1, t_link t2
+        WHERE gid = #{gid}
+        AND t1.create_time BETWEEN #{startDate} AND #{endDate}
+        AND user in
+        <foreach collection="userSet" item="item" open="(" close=")" separator="," index="index">
+            #{item}
+        </foreach>
+        GROUP BY
+        user
+    </select>
+
+</mapper>

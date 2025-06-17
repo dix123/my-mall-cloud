@@ -6,17 +6,19 @@ import cn.hutool.crypto.digest.BCrypt;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.my.mall.security.bo.UserInfoInTokenBO;
+import com.my.mall.api.auth.bo.UserInfoInTokenBO;
 import com.my.mall.auth.mapper.UserMapper;
 import com.my.mall.auth.service.UserService;
 import com.my.mall.common.core.api.ErrorCode;
 import com.my.mall.common.core.exception.ApiException;
 import com.my.mall.auth.model.UserDO;
+import org.springframework.stereotype.Service;
 
 /**
  * @Author: haole
  * @Date: 2025/4/28
  **/
+@Service
 public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements UserService {
     private static final String USER_NOT_FOUND_SECRET = "USER_NOT_FOUND_SECRET";
     private static String userNotFoundEncodedPassword;
@@ -38,7 +40,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
         if (!BCrypt.checkpw(password, userDO.getPassword())) {
             throw new ApiException("用户名或密码不正确");
         }
-        return BeanUtil.copyProperties(userDO, UserInfoInTokenBO.class);
+        return BeanUtil.toBean(userDO, UserInfoInTokenBO.class);
 
     }
 }

@@ -1,10 +1,13 @@
 package com.my.mall.shortlink.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.my.mall.api.shortlink.dto.req.ShortLinkStatsReqDTO;
 import com.my.mall.shortlink.entity.LinkStatsTodayDO;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 /**
  * @Author: Base
@@ -22,4 +25,18 @@ public interface LinkStatsTodayMapper extends BaseMapper<LinkStatsTodayDO> {
             "VALUES( #{linkTodayStats.fullShortUrl}, #{linkTodayStats.date}, #{linkTodayStats.todayUv}, #{linkTodayStats.todayPv}, #{linkTodayStats.todayUip}, NOW(), NOW(), 0) " +
             "ON DUPLICATE KEY UPDATE today_uv = today_uv +  #{linkTodayStats.todayUv}, today_pv = today_pv +  #{linkTodayStats.todayPv}, today_uip = today_uip +  #{linkTodayStats.todayUip};")
     void shortLinkTodayState(@Param("linkTodayStats") LinkStatsTodayDO linkStatsTodayDO);
+
+    /**
+     * 获取指定时间内的每日统计信息
+     * @param param
+     * @return
+     */
+    List<LinkStatsTodayDO> listStatsByShortLink(ShortLinkStatsReqDTO param);
+
+    /**
+     * 获取指定时间内的每日统计信息、分组
+     * @param param
+     * @return
+     */
+    List<LinkStatsTodayDO> listStatsByGroup(ShortLinkStatsReqDTO param);
 }

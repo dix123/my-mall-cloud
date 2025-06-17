@@ -1,6 +1,6 @@
 package com.my.mall.security;
 
-import com.my.mall.security.bo.UserInfoInTokenBO;
+import com.my.mall.api.auth.bo.UserInfoInTokenBO;
 
 /**
  * @Author: haole

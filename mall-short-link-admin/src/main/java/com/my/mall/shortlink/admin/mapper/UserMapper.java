@@ -2,7 +2,6 @@ package com.my.mall.shortlink.admin.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.my.mall.shortlink.admin.entity.UserDO;
-import org.apache.calcite.adapter.java.Map;
 import org.apache.ibatis.annotations.Mapper;
 
 /**

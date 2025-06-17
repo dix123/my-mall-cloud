@@ -5,7 +5,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = "com.my.mall.**")
 @EnableFeignClients(value = "com.my.mall.api.**.feign")
 @MapperScan("com.my.mall.**.mapper")
 public class ShortLinkAdminApplication {

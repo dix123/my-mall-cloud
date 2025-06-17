@@ -3,6 +3,7 @@ package com.my.mall.shortlink.admin.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.crypto.digest.BCrypt;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
@@ -28,6 +29,7 @@ import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -59,22 +61,22 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
     @Transactional(rollbackFor = Exception.class)
     public void register(UserRegisterReqDTO userRegisterReqDTO) {
         String username = userRegisterReqDTO.getUsername();
+        String originalPassword = userRegisterReqDTO.getPassword();
+        String encPassword = BCrypt.hashpw(originalPassword);
+        userRegisterReqDTO.setPassword(encPassword);
         if (hasUsername(username)) {
             throw new ApiException(ErrorCode.USER_NAME_EXIST_ERROR);
         }
         RLock lock = redissonClient.getLock(RedisCacheConstant.USER_REGISTER_LOCK + username);
+        if (!lock.tryLock()) {
+            throw new ApiException(ErrorCode.USER_NAME_EXIST_ERROR);
+        }
         try {
-            //这样的话如果创建出现异常那不就没创建了
-//            if (!lock.tryLock()) {
-//                throw new ApiException(ErrorCode.USER_NAME_EXIST_ERROR);
-//            }
-            lock.lock();
-            if (hasUsername(username)) {
-                throw new ApiException(ErrorCode.USER_NAME_EXIST_ERROR);
-            }
             baseMapper.insert(BeanUtil.toBean(userRegisterReqDTO, UserDO.class));
             groupService.saveGroup("默认分组", username);
             userRegisterBloomFilter.add(username);
+        } catch (DuplicateKeyException e) {
+            throw new ApiException(ErrorCode.USER_NAME_EXIST_ERROR);
         } finally {
             lock.unlock();
         }
@@ -117,7 +119,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
         AuthUserContext.clean();
     }
 
-    private boolean hasUsername(String username) {
+    @Override
+    public Boolean hasUsername(String username) {
         return userRegisterBloomFilter.contains(username);
     }
 }

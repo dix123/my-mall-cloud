@@ -1,16 +1,15 @@
 package com.my.mall.auth.manager;
 
 import cn.hutool.core.codec.Base64;
-import cn.hutool.core.lang.Validator;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.ReUtil;
 import cn.hutool.core.util.StrUtil;
 import com.my.mall.common.core.constant.RegexpConstant;
 import com.my.mall.common.core.exception.ApiException;
-import com.my.mall.security.bo.TokenInfoBO;
-import com.my.mall.security.bo.UserInfoInTokenBO;
-import com.mall.common.cache.constant.AuthCacheConstant;
-import com.my.mall.security.constant.AuthConstant;
+import com.my.mall.api.auth.bo.TokenInfoBO;
+import com.my.mall.api.auth.bo.UserInfoInTokenBO;
+import com.my.mall.common.core.constant.AuthCacheConstant;
+import com.my.mall.security.AuthUserContext;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
@@ -20,6 +19,8 @@ import org.springframework.data.redis.core.SessionCallback;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * @Author: haole
  * @Date: 2025/4/28
@@ -28,7 +29,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class TokenStore {
     @Autowired
-    private RedisTemplate redisTemplate;
+    private RedisTemplate<Object, Object> redisTemplate;
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
 
@@ -48,18 +49,18 @@ public class TokenStore {
 
         String oldAccessAndRefresh = stringRedisTemplate.opsForValue().get(uidToAccessTokenKeyStr);
 
-        redisTemplate.executePipelined(new SessionCallback<Object>() {
+        redisTemplate.executePipelined(new SessionCallback<>() {
             @Override
             public Object execute(RedisOperations operations) throws DataAccessException {
                 operations.multi();
                 if (oldAccessAndRefresh != null) {
                     String[] array = oldAccessAndRefresh.split(StrUtil.COLON);
-                    operations.opsForValue().getAndDelete(getAccessTokenKey(array[0]));
-                    operations.opsForValue().getAndDelete(getRefreshTokenKey(array[1]));
+                    operations.delete(getAccessTokenKey(array[0]));
+                    operations.delete(getRefreshTokenKey(array[1]));
                 }
-                operations.opsForValue().set(uidToAccessTokenKeyStr, accessTokenKeyStr + StrUtil.COLON + refreshTokenKeyStr, AuthCacheConstant.REFRESH_TOKEN_EXPIRE_TIME);
-                operations.opsForValue().set(accessTokenKeyStr, userInfoInToken, AuthCacheConstant.ACCESS_TOKEN_EXPIRE_TIME);
-                operations.opsForValue().set(refreshTokenKeyStr, userInfoInToken, AuthCacheConstant.REFRESH_TOKEN_EXPIRE_TIME);
+                operations.opsForValue().set(uidToAccessTokenKeyStr, accessToken + StrUtil.COLON + refreshToken, AuthCacheConstant.REFRESH_TOKEN_EXPIRE_TIME, TimeUnit.MINUTES);
+                operations.opsForValue().set(accessTokenKeyStr, userInfoInToken, AuthCacheConstant.ACCESS_TOKEN_EXPIRE_TIME, TimeUnit.SECONDS);
+                operations.opsForValue().set(refreshTokenKeyStr, userInfoInToken, AuthCacheConstant.REFRESH_TOKEN_EXPIRE_TIME, TimeUnit.SECONDS);
                 operations.exec();
                 return null;
             }
@@ -68,9 +69,9 @@ public class TokenStore {
 
     }
 
-    public void logout(Long uid) {
+    public void logout(Long id) {
         UserInfoInTokenBO userInfoInTokenBO = new UserInfoInTokenBO();
-        userInfoInTokenBO.setId(uid);
+        userInfoInTokenBO.setId(id);
         String uidToAccessKey = getUidToAccessKey(userInfoInTokenBO);
         String accessKeyArray = (String)redisTemplate.opsForValue().get(uidToAccessKey);
         String[] array = accessKeyArray.split(StrUtil.COLON);
@@ -78,11 +79,12 @@ public class TokenStore {
         String refreshKey = array[1];
         redisTemplate.delete(getAccessTokenKey(accessKey));
         redisTemplate.delete(getRefreshTokenKey(refreshKey));
+        redisTemplate.delete(uidToAccessKey);
     }
 
     public UserInfoInTokenBO checkToken(String accessToken) {
         accessToken = decryptToken(accessToken);
-        UserInfoInTokenBO userInfoInToken = (UserInfoInTokenBO) redisTemplate.opsForValue().get(accessToken);
+        UserInfoInTokenBO userInfoInToken = (UserInfoInTokenBO) redisTemplate.opsForValue().get(getAccessTokenKey(accessToken));
         return userInfoInToken;
     }
 

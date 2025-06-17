@@ -41,4 +41,11 @@ public interface UserService extends IService<UserDO> {
      * 登出
      */
     void logout();
+
+    /**
+     * 是否有这个用户
+     * @param username
+     * @return
+     */
+    Boolean hasUsername(String username);
 }

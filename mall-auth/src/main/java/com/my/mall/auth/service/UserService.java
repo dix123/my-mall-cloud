@@ -1,7 +1,7 @@
 package com.my.mall.auth.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.my.mall.security.bo.UserInfoInTokenBO;
+import com.my.mall.api.auth.bo.UserInfoInTokenBO;
 import com.my.mall.auth.model.UserDO;
 
 /**

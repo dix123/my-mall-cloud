@@ -1,5 +1,7 @@
 server:
-  port: 8000
+  port: 8001
+  http:
+    max-header-size: 64KB
 
 spring:
   application:
@@ -9,10 +11,23 @@ spring:
     url: jdbc:shardingsphere:classpath:shardingsphere-config-${database.env:dev}.yaml
   data:
     redis:
-      host: 127.0.0.1
+      host: 192.168.220.128
       port: 6379
       password: 123456
   cloud:
     nacos:
       discovery:
-        server-addr: 127.0.0.1:8848
+        server-addr: 192.168.220.128:8848
+
+feign:
+  inside:
+    key: haole
+    secret: 114514
+    ips:
+
+
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    map-underscore-to-camel-case: true
+  mapper-locations: classpath:mapper/*.xml

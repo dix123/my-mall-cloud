@@ -12,6 +12,6 @@ public interface ShortLinkConstant {
     /**
      * cookie存活时间
      */
-    int SHORT_LINK_UV_COOKIE_LIVE_TIME = 60 * 60 * 24 * 30;
+    int SHORT_LINK_UV_COOKIE_LIVE_TIME = 60 * 60 * 24;
 
 }

@@ -9,9 +9,9 @@ import com.my.mall.common.core.handler.HttpHandler;
 import com.my.mall.common.core.util.IpHelper;
 import com.my.mall.security.AuthUserContext;
 import com.my.mall.security.adapter.AuthConfigAdapter;
-import com.my.mall.security.bo.UserInfoInTokenBO;
+import com.my.mall.api.auth.bo.UserInfoInTokenBO;
 import com.my.mall.common.core.feign.FeignInsideAuthConfig;
-import com.my.mall.security.constant.AuthConstant;
+import com.my.mall.api.auth.constant.AuthConstant;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -72,6 +72,11 @@ public class AuthFilter implements Filter {
             }
         }
 
+        if (req.getServerName().contains(authConfigAdapter.unCheck())) {
+            filterChain.doFilter(req, resp);
+            return;
+        }
+
         String accessToken = req.getHeader(AuthConstant.AUTH_HEADER);
         if (StrUtil.isBlank(accessToken)) {
             httpHandler.printToWeb(CommonResult.failed(ErrorCode.IDEMPOTENT_TOKEN_NULL_ERROR));
@@ -111,7 +116,9 @@ public class AuthFilter implements Filter {
         }
         List<String> ips = feignInsideAuthConfig.getIps();
         ips.removeIf(StrUtil::isBlank);
-        if (CollectionUtil.isEmpty(ips) || !ips.contains(IpHelper.getIpAddr())) {
+        if (CollectionUtil.isEmpty(ips)) {
+            return true;
+        } else if (!ips.contains(IpHelper.getIpAddr())) {
             log.error("ip is not in white list,{}, ip, {}", ips, IpHelper.getIpAddr());
             return false;
         }

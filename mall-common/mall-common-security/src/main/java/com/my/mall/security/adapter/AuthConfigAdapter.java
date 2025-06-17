@@ -7,6 +7,14 @@ import java.util.List;
  * @Date: 2025/4/30
  **/
 public interface AuthConfigAdapter {
+
+
+    /**
+     * 包含这个就放行
+     * @return
+     */
+    String unCheck();
+
     /**
      * 匹配的路径
      * @return
@@ -19,4 +27,6 @@ public interface AuthConfigAdapter {
      * @return
      */
     List<String> excludePathPatterns(String... path);
+
+
 }

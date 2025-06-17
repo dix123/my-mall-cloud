@@ -3,18 +3,15 @@ package com.my.mall.shortlink.admin.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
-import cn.hutool.system.UserInfo;
-import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.my.mall.api.shortlink.dto.GroupShortLinkCountDTO;
-import com.my.mall.api.shortlink.feign.ShortLinkFeignClient;
+import com.my.mall.api.shortlink.feign.ShortLinkGroupFeignClient;
 import com.my.mall.common.core.api.CommonResult;
 import com.my.mall.common.core.exception.ApiException;
 import com.my.mall.security.AuthUserContext;
-import com.my.mall.security.bo.UserInfoInTokenBO;
+import com.my.mall.api.auth.bo.UserInfoInTokenBO;
 import com.my.mall.shortlink.admin.constant.RedisCacheConstant;
 import com.my.mall.shortlink.admin.dto.req.GroupNameUpdateReqDTO;
 import com.my.mall.shortlink.admin.dto.req.GroupSortUpdateReqDTO;
@@ -27,7 +24,6 @@ import com.my.mall.shortlink.admin.service.GroupService;
 import com.my.mall.shortlink.admin.tool.KeyGenerator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.calcite.avatica.proto.Common;
 import org.redisson.api.RBloomFilter;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
@@ -51,10 +47,10 @@ public class GroupServiceImp extends ServiceImpl<GroupMapper, GroupDO> implement
     private final RBloomFilter<String> gidRegisterBloomFilter;
     private final RedissonClient redissonClient;
     @Value("${short-link.group.max-num}")
-    private final Integer groupMaxNum;
+    private  Integer groupMaxNum;
     private final GroupUniqueMapper groupUniqueMapper;
 
-    private final ShortLinkFeignClient shortLinkFeignClient;
+    private final ShortLinkGroupFeignClient shortLinkFeignClient;
     private final GroupMapper groupMapper;
 
 
@@ -65,7 +61,7 @@ public class GroupServiceImp extends ServiceImpl<GroupMapper, GroupDO> implement
         lock.lock();
         try {
             LambdaQueryWrapper<GroupDO> queryWrapper = Wrappers.lambdaQuery(GroupDO.class)
-                    .eq(GroupDO::getUserName, username)
+                    .eq(GroupDO::getUsername, username)
                     .eq(GroupDO::getDelFlag, 0);
             List<GroupDO> groupDOList = baseMapper.selectList(queryWrapper);
             if (CollUtil.isNotEmpty(groupDOList) && groupDOList.size() == groupMaxNum) {
@@ -79,12 +75,13 @@ public class GroupServiceImp extends ServiceImpl<GroupMapper, GroupDO> implement
                 if (StrUtil.isNotBlank(gid)) {
                     GroupDO groupDo = GroupDO.builder()
                             .gid(gid)
-                            .userName(username)
+                            .username(username)
                             .name(groupName)
                             .sortOrder(0)
                             .build();
                     baseMapper.insert(groupDo);
                     gidRegisterBloomFilter.add(gid);
+                    break;
                 }
                 retry++;
             }
@@ -100,7 +97,7 @@ public class GroupServiceImp extends ServiceImpl<GroupMapper, GroupDO> implement
     public List<GroupRespDTO> listGroup() {
         UserInfoInTokenBO userInfoInToken = AuthUserContext.get();
         LambdaQueryWrapper<GroupDO> wrapper = Wrappers.lambdaQuery(GroupDO.class)
-                .eq(GroupDO::getUserName, userInfoInToken.getUsername())
+                .eq(GroupDO::getUsername, userInfoInToken.getUsername())
                 .eq(GroupDO::getDelFlag, 0)
                 .orderByDesc(GroupDO::getSortOrder, GroupDO::getUpdateTime);
         List<GroupDO> groupDOList = baseMapper.selectList(wrapper);
@@ -124,7 +121,7 @@ public class GroupServiceImp extends ServiceImpl<GroupMapper, GroupDO> implement
         UserInfoInTokenBO userInfoInTokenBO = AuthUserContext.get();
         LambdaQueryWrapper<GroupDO> wrapper = Wrappers.lambdaQuery(GroupDO.class)
                 .eq(GroupDO::getDelFlag, 0)
-                .eq(GroupDO::getUserName, userInfoInTokenBO.getUsername())
+                .eq(GroupDO::getUsername, userInfoInTokenBO.getUsername())
                         .eq(GroupDO::getGid, groupNameUpdateReqDTO.getGid());
         GroupDO groupDO = GroupDO.builder()
                         .name(groupNameUpdateReqDTO.getName())
@@ -136,7 +133,7 @@ public class GroupServiceImp extends ServiceImpl<GroupMapper, GroupDO> implement
     public void deleteGroup(String gid) {
         LambdaQueryWrapper<GroupDO> wrapper = Wrappers.lambdaQuery(GroupDO.class)
                 .eq(GroupDO::getGid, gid)
-                .eq(GroupDO::getUserName, AuthUserContext.get().getUsername())
+                .eq(GroupDO::getUsername, AuthUserContext.get().getUsername())
                 .eq(GroupDO::getDelFlag, 0);
         GroupDO groupDO = new GroupDO();
         groupDO.setDelFlag(1);

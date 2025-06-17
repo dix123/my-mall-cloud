@@ -1,10 +1,15 @@
 package com.my.mall.shortlink.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+
+import com.my.mall.api.shortlink.dto.req.ShortLinkStatsReqDTO;
+import com.my.mall.api.shortlink.dto.resp.resp.ShortLinkDeviceStatsRespDTO;
 import com.my.mall.shortlink.entity.LinkDeviceStatsDO;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 /**
  * @Author: Base
@@ -22,4 +27,18 @@ public interface LinkDeviceStatsMapper extends BaseMapper<LinkDeviceStatsDO> {
             "VALUES( #{linkDeviceStats.fullShortUrl}, #{linkDeviceStats.date}, #{linkDeviceStats.cnt}, #{linkDeviceStats.device}, NOW(), NOW(), 0) " +
             "ON DUPLICATE KEY UPDATE cnt = cnt +  #{linkDeviceStats.cnt};")
     void shortLinkDeviceState(@Param("linkDeviceStats") LinkDeviceStatsDO linkDeviceStatsDO);
+
+    /**
+     * 通过短链接获取设备统计信息
+     * @param param
+     * @return
+     */
+    List<ShortLinkDeviceStatsRespDTO> listDeviceStatsByShortLink(ShortLinkStatsReqDTO param);
+
+    /**
+     * 通过短链接获取设备统计信息
+     * @param param
+     * @return
+     */
+    List<ShortLinkDeviceStatsRespDTO> listDeviceStatsByGroup(ShortLinkStatsReqDTO param);
 }

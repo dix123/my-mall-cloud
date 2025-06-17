@@ -18,13 +18,70 @@
 
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.my.mall.shortlink.mapper.LinkAccessStatsMapper">
-    <insert id="updateStats" >
+    <insert id="updateRecord" >
         INSERT INTO
-            t_link_access_stats(fullShortUrl, uv, pv, uip, date, hour, weekday)
+            t_link_access_stats(full_short_url, uv, pv, uip, date, hour, weekday, create_time, update_time, del_flag)
             values (#{linkAccessStats.fullShortUrl}, #{linkAccessStats.uv}, #{linkAccessStats.pv}, #{linkAccessStats.uip}
-            , #{linkAccessStats.date}, #{linkAccessStats.hour}, #{linkAccessStats.weekday})
-            ON DUPLICATE KEY UPDATE pv = pv + #{linkAccessStats.pv}, uv = uv + #{linkAccessStats.uv}, uip = uip + #{linkAccessStats.uip}
+            , #{linkAccessStats.date}, #{linkAccessStats.hour}, #{linkAccessStats.weekday}, #{linkAccessStats.createTime}, #{linkAccessStats.updateTime}, #{linkAccessStats.delFlag})
+            ON DUPLICATE KEY UPDATE pv = pv + #{linkAccessStats.pv}, uv = uv + #{linkAccessStats.uv}, uip = uip + #{linkAccessStats.uip}, update_time = #{linkAccessStats.updateTime}
 
     </insert>
 
+    <select id="listHourStats" resultType="com.my.mall.shortlink.bo.ShortLinkHourStatsBO">
+        SELECT
+            hour,
+            SUM(pv) as pv
+        FROM
+            t_link_access_stats
+        where
+            full_short_url = #{fullShortUrl}
+            AND del_flag = '0'
+            AND date BETWEEN #{startDate} AND #{endDate}
+        GROUP BY
+            hour
+    </select>
+
+    <select id="listHourStatsByGroup" resultType="com.my.mall.shortlink.bo.ShortLinkHourStatsBO">
+        SELECT
+            hour,
+            SUM(pv) as pv
+        FROM
+            t_link_access_stats t1, t_link t2
+        where
+            gid = #{gid}
+          AND t1.full_short_url = t2.full_short_url
+          AND t1.del_flag = 0
+          AND t1.date BETWEEN #{startDate} AND #{endDate}
+        GROUP BY
+            hour
+    </select>
+
+    <select id="listWeekDayStatsByShortLink" resultType="com.my.mall.shortlink.bo.ShortLinkWeekDayStatsBO">
+        select
+            weekday,
+            sum(pv) AS count
+        FROM
+            t_link_access_stats
+        WHERE
+            full_short_url = #{fullShortUrl}
+            AND del_flag = 0
+            AND date BETWEEN #{startDate} AND #{endDate}
+        GROUP BY
+            weekday
+    </select>
+
+    <select id="listWeekDayStatsByGroup" resultType="com.my.mall.shortlink.bo.ShortLinkWeekDayStatsBO">
+        select
+            weekday,
+            sum(pv) AS count
+        FROM
+            t_link_access_stats t1, t_link t2
+        WHERE
+            gid = #{gid}
+          AND t1.full_short_url = t2.full_short_url
+          AND t1.del_flag = 0
+          AND t1.date BETWEEN #{startDate} AND #{endDate}
+        GROUP BY
+            weekday
+    </select>
 </mapper>
