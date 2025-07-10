@@ -57,6 +57,7 @@ import org.springframework.messaging.support.GenericMessage;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
@@ -81,7 +82,10 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, LinkDO> i
     @Value("${short-link.domain.default}")
     private String shortLinkDomain;
     @Autowired
+    @Resource(name = "shortUriCreateBloomFilter")
     private RBloomFilter<String> shortUrlCreateBloomFilter;
+    @Autowired
+    private RBloomFilter<String> originUrlBloomFilter;
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
     @Autowired
@@ -92,6 +96,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, LinkDO> i
     private RedissonClient redissonClient;
     @Autowired
     private WhiteListConfiguration whiteListConfiguration;
+    private final Random random = new Random();
 
 
     @Override
@@ -103,6 +108,12 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, LinkDO> i
     @Override
     public ShortLinkCreateRespDTO createShortLink(ShortLinkCreateReqDTO param) {
         verificationWhiteList(param.getOriginUrl());
+//        if (originUrlBloomFilter.contains(param.getOriginUrl())) {
+//            return ShortLinkCreateRespDTO.builder()
+//                    .originalUrl(param.getOriginUrl())
+//                    .fullShortUrl("数据库中已存在，请重新查询")
+//                    .build();
+//        }
         String suffix = generateSuffix(param);
         String fullShortLink = StrBuilder.create(HttpConstant.PREFIX + shortLinkDomain)
                 .append("/")
@@ -140,10 +151,11 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, LinkDO> i
             }
             throw new ApiException(String.format("短连接：%s生成重复", fullShortLink));
         }
+        int percent = random.nextInt(2,5);
         stringRedisTemplate.opsForValue().set(
                 String.format(ShortLinkCache.SHORT_LINK_GOTO_KEY, fullShortLink),
                 param.getOriginUrl(),
-                LinkUtil.getCacheTime(param.getValidDate()),
+                LinkUtil.getCacheTime(param.getValidDate()) * percent / 10,
                 TimeUnit.MINUTES
         );
         shortUrlCreateBloomFilter.add(fullShortLink);
@@ -228,15 +240,35 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, LinkDO> i
                         .filter(item -> item.getDelFlag().equals(0))
                         .findFirst().orElse(null);
             } else {
-                linkDO = linkDOList.get(0);
+                while (true) {
+                    Thread.sleep(1000);
+                    shortLinkGotoDO = shortLinkGotoMapper.selectOne(wrapper);
+                    if (shortLinkGotoDO == null) {
+                        stringRedisTemplate.opsForValue().set(String.format(ShortLinkCache.SHORT_LINK_IS_NULL_KEY, fullShortUrl), fullShortUrl, ShortLinkCache.NULL_KEY_OUT_TIME, TimeUnit.MINUTES);
+                        throw new ApiException(ErrorCode.NULL_SHORT_URL);
+                    }
+                    linkDoLambdaQueryWrapper = Wrappers.lambdaQuery(LinkDO.class)
+                            .eq(LinkDO::getGid, shortLinkGotoDO.getGid())
+                            .eq(LinkDO::getFullShortUrl, fullShortUrl)
+                            .eq(LinkDO::getEnableStatus, 1)
+                            .ne(LinkDO::getDelFlag, 1);
+                    linkDOList = shortLinkMapper.selectList(linkDoLambdaQueryWrapper);
+                    if (linkDOList.size() == 1) {
+                        linkDO = linkDOList.get(0);
+                        break;
+                    }
+                }
             }
             if (linkDO == null || (linkDO.getValidDate() != null && linkDO.getValidDate().isBefore(LocalDateTime.now()))) {
                 stringRedisTemplate.opsForValue().set(String.format(ShortLinkCache.SHORT_LINK_IS_NULL_KEY, fullShortUrl), fullShortUrl, ShortLinkCache.NULL_KEY_OUT_TIME, TimeUnit.MINUTES);
                 throw new ApiException(ErrorCode.NULL_SHORT_URL);
             }
-            stringRedisTemplate.opsForValue().set(String.format(ShortLinkCache.SHORT_LINK_GOTO_KEY, fullShortUrl), linkDO.getOriginUrl(), LinkUtil.getCacheTime(linkDO.getValidDate()), TimeUnit.MINUTES);
+            int percent = random.nextInt(2,5);
+            stringRedisTemplate.opsForValue().set(String.format(ShortLinkCache.SHORT_LINK_GOTO_KEY, fullShortUrl), linkDO.getOriginUrl(), LinkUtil.getCacheTime(linkDO.getValidDate()) * percent / 10, TimeUnit.MINUTES);
             shortLinkStatusCount(fullShortUrl, request, response);
             response.sendRedirect(linkDO.getOriginUrl());
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         } finally {
             lock.unlock();
         }

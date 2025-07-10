@@ -79,8 +79,8 @@
         FROM
             (
                 SELECT
-                    CASE WHEN COUNT(DISTINCT DATE(create_time)) > 1 THEN 1 ELSE 0 END AS oldUser,
-                    CASE WHEN COUNT(DISTINCT  DATE(create_time)) = 1 AND MAX(create_time) between #{startDate} AND #{endDate} THEN 1 ELSE 0 END AS newUser
+                    CASE WHEN MIN(create_time) BETWEEN #{startDate} AND #{endDate} THEN 1 ELSE 0 END AS newUser,
+                    CASE WHEN MIN(create_time) NOT BETWEEN #{startDate} AND #{endDate} THEN 1 ELSE 0 END AS oldUser
                 FROM t_link_access_logs
                 WHERE full_short_url = #{fullShortUrl}
                     AND del_flag = 0
@@ -89,21 +89,23 @@
             ) AS user_count
     </select>
 
+<!--    CASE WHEN COUNT(DISTINCT DATE(t1.create_time)) > 1 THEN 1 ELSE 0 END AS oldUser,-->
+<!--    CASE WHEN COUNT(DISTINCT  DATE(t1.create_time)) = 1 AND MAX(t1.create_time) between #{startDate} AND  #{endDate} THEN 1 ELSE 0 END AS newUser-->
     <select id="listUvTypeStatsByGroup" resultType="com.my.mall.shortlink.bo.ShortLinkUvTypeBO">
         SELECT
         sum(oldUser) AS oldUserCount,
         SUM(newUser) AS newUserCount
         FROM
         (
-        SELECT
-        CASE WHEN COUNT(DISTINCT DATE(t1.create_time)) > 1 THEN 1 ELSE 0 END AS oldUser,
-        CASE WHEN COUNT(DISTINCT  DATE(t1.create_time)) = 1 AND MAX(t1.create_time) between #{startDate} AND  #{endDate} THEN 1 ELSE 0 END AS newUser
-        FROM t_link_access_logs t1, t_link t2
-        WHERE gid = #{gid}
-        AND t1.full_short_url = t2.full_short_url
-        AND t1.del_flag = 0
-        GROUP BY
-        user
+            SELECT
+                CASE WHEN MIN(create_time) BETWEEN #{startDate} AND #{endDate} THEN 1 ELSE 0 END AS newUser,
+                CASE WHEN MIN(create_time) NOT BETWEEN #{startDate} AND #{endDate} THEN 1 ELSE 0 END AS oldUser
+            FROM t_link_access_logs t1, t_link t2
+            WHERE gid = #{gid}
+                AND t1.full_short_url = t2.full_short_url
+                AND t1.del_flag = 0
+            GROUP BY
+                user
         ) AS user_count
     </select>
 

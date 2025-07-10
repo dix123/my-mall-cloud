@@ -1,9 +1,9 @@
 package com.my.mall.shortlink.admin.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.my.mall.api.shortlink.admin.dto.resp.UserRespDTO;
 import com.my.mall.shortlink.admin.dto.req.UserRegisterReqDTO;
 import com.my.mall.shortlink.admin.dto.req.UserUpdateReqDTO;
-import com.my.mall.shortlink.admin.dto.resp.UserRespDTO;
 import com.my.mall.shortlink.admin.entity.UserDO;
 
 /**

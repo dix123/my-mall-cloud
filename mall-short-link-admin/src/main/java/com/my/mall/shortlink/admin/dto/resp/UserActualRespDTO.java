@@ -1,7 +1,5 @@
 package com.my.mall.shortlink.admin.dto.resp;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.my.mall.shortlink.admin.serialize.PhoneDesensitizationSerializer;
 import lombok.Data;
 
 /**

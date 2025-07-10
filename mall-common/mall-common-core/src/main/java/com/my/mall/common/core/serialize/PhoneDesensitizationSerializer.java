@@ -1,4 +1,4 @@
-package com.my.mall.shortlink.admin.serialize;
+package com.my.mall.common.core.serialize;
 
 import cn.hutool.core.util.DesensitizedUtil;
 import com.fasterxml.jackson.core.JsonGenerator;

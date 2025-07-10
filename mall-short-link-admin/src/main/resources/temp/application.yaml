@@ -1,11 +1,5 @@
-server:
-  port: 8001
-  http:
-    max-header-size: 64KB
 
 spring:
-  application:
-    name: auth-service
   datasource:
     driver-class-name: org.apache.shardingsphere.driver.ShardingSphereDriver
     url: jdbc:shardingsphere:classpath:shardingsphere-config-${database.env:dev}.yaml
@@ -16,14 +10,27 @@ spring:
       password: 123456
   cloud:
     nacos:
+      server-addr: 192.168.220.128:8848
       discovery:
         server-addr: 192.168.220.128:8848
+
+
+short-link:
+  group:
+    max-num: 20
+  flow-limit:
+    enable: true
+    time-window: 1
+    max-access-count: 20
 
 feign:
   inside:
     key: haole
     secret: 114514
     ips:
+
+
+
 
 
 mybatis-plus:

@@ -1,4 +1,10 @@
+server:
+  port: 8002
 spring:
+  application:
+    name: short-link-project
+  profiles:
+    active: dev
   cloud:
     nacos:
       discovery:
@@ -8,10 +14,7 @@ spring:
       config:
         server-addr: ${spring.cloud.nacos.discovery.server-addr}
         file-extension: yml
-        namespace: default
         shared-configs:
           - application-${spring.profiles.active}.${spring.cloud.nacos.config.file-extension}
         username: ${spring.cloud.nacos.discovery.username}
         password: ${spring.cloud.nacos.discovery.password}
-  profiles:
-    active: dev

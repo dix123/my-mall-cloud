@@ -5,10 +5,7 @@ import com.my.mall.api.shortlink.feign.ShortLinkGroupFeignClient;
 import com.my.mall.common.core.api.CommonResult;
 import com.my.mall.shortlink.service.ShortLinkService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -25,4 +22,6 @@ public class ShortLinkFeignController{
     public CommonResult<List<GroupShortLinkCountDTO>> listGroupShortLinkCount(@RequestParam("gid") List<String> gid) {
         return CommonResult.success(shortLinkService.listGroupShortLinkCount(gid));
     }
+
+
 }

@@ -1,10 +1,4 @@
-server:
-  port: 8000
-  http:
-    max-header-size: 64KB
 spring:
-  application:
-    name: short-link-gateway
   main:
     web-application-type: reactive
   mvc:

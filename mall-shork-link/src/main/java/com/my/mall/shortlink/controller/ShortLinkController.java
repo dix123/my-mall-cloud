@@ -37,6 +37,7 @@ public class ShortLinkController {
     }
 
     @GetMapping("/{short-uri}")
+    @SentinelResource("short-link-redirect")
     public void redirect(@PathVariable("short-uri") String shortUri, HttpServletRequest request, HttpServletResponse response) {
         shortLinkService.redirectUrl(shortUri, request, response);
     }

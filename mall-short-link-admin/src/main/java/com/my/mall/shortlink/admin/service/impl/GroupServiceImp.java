@@ -56,7 +56,6 @@ public class GroupServiceImp extends ServiceImpl<GroupMapper, GroupDO> implement
 
     @Override
     public void saveGroup(String groupName, String username) {
-
         RLock lock = redissonClient.getLock(String.format(RedisCacheConstant.CREATE_GROUP_LOCK, username));
         lock.lock();
         try {

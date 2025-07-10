@@ -37,6 +37,7 @@ public class DefaultAuthConfigAdapter implements AuthConfigAdapter{
     private static final String HAS_USER = "/api/short-link/admin/v1/user/has-username";
 
     private static final String LOGIN = "/api/short-link/admin/v1/user/login";
+    private static final String OTHER_LOGIN = "/api/auth/callback";
 
     private static final String GOTO = "localhost";
 
@@ -59,6 +60,7 @@ public class DefaultAuthConfigAdapter implements AuthConfigAdapter{
         arrayList.add(REGISTER);
         arrayList.add(HAS_USER);
         arrayList.add(LOGIN);
+        arrayList.add(OTHER_LOGIN);
         arrayList.addAll(Arrays.asList(paths));
         return arrayList;
     }

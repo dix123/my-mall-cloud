@@ -44,6 +44,11 @@
             <artifactId>easyexcel</artifactId>
             <version>${easyexcel.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.my.mall</groupId>
+            <artifactId>mall-api-shortlink-admin</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 
     <build>

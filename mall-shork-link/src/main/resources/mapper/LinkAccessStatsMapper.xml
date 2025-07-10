@@ -35,7 +35,7 @@
             t_link_access_stats
         where
             full_short_url = #{fullShortUrl}
-            AND del_flag = '0'
+            AND del_flag = 0
             AND date BETWEEN #{startDate} AND #{endDate}
         GROUP BY
             hour

@@ -23,7 +23,7 @@ public class LinkUtil {
      */
     public static Long getCacheTime(LocalDateTime dateTime) {
         return Optional.ofNullable(dateTime)
-                .map(each -> LocalDateTimeUtil.between(LocalDateTime.now(), dateTime, DateUnit.SECOND.toChronoUnit()))
+                .map(each -> LocalDateTimeUtil.between(dateTime, LocalDateTime.now(), DateUnit.SECOND.toChronoUnit()))
                 .orElse(ShortLinkGotoConstant.DEFAULT_CACHE_TIME);
     }
 
