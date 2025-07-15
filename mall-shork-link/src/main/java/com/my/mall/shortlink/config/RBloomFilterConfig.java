@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class RBloomFilterConfig {
 
-    @Bean
+    @Bean("shortUriCreateBloomFilter")
     public RBloomFilter<String> shortUriCreateBloomFilter(RedissonClient redissonClient) {
         RBloomFilter<String> cachePenetrationBloomFilter = redissonClient.getBloomFilter("shortUrlCreateBloomFilter");
         cachePenetrationBloomFilter.tryInit(100000000L, 0.001);

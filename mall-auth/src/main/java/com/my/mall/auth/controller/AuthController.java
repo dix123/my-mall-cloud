@@ -12,6 +12,8 @@ import com.my.mall.common.core.api.CommonResult;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
@@ -37,6 +39,7 @@ import java.util.Objects;
 public class AuthController {
 
 
+    private static final Logger log = LoggerFactory.getLogger(AuthController.class);
     @Autowired
     UserService userService;
     @Autowired
@@ -52,6 +55,7 @@ public class AuthController {
 
     @GetMapping("/api/auth/callback")
     public CommonResult<Void> otherLogin(@RequestParam("code") String code, HttpServletResponse response) throws IOException {
+        log.info(code);
         AccessTokenAndUserNameDTO accessTokenAndUserNameDTO = userService.otherLogin(code);
         Cookie cookie = new Cookie("token", accessTokenAndUserNameDTO.getAccessToken());
         cookie.setPath("/callback");
@@ -65,7 +69,7 @@ public class AuthController {
         usernameCookie.setMaxAge(3600);
         response.addCookie(cookie);
         response.addCookie(usernameCookie);
-        response.sendRedirect("http://localhost:5173/callback");
+        response.sendRedirect("https://14.215.41.145:11550/callback");
         return CommonResult.success();
     }
 

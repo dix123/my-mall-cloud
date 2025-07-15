@@ -5,5 +5,5 @@ package com.my.mall.shortlink.constant;
  * @Date: 2025/5/12
  **/
 public interface HttpConstant {
-    String PREFIX = "http://";
+    String PREFIX = "https://";
 }

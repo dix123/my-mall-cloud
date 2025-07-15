@@ -1,17 +1,20 @@
+server:
+  port: 8003
 spring:
+  application:
+    name: short-link-admin
+  profiles:
+    active: dev
   cloud:
     nacos:
       discovery:
-        server-addr: ${NACOS_HOST:192.168.220.128}:${NACOS_PORT:8848}
+        server-addr: ${NACOS_HOST:nacos2}:${NACOS_PORT:8848}
         username: nacos
         password: nacos
       config:
         server-addr: ${spring.cloud.nacos.discovery.server-addr}
         file-extension: yml
-        namespace: default
         shared-configs:
           - application-${spring.profiles.active}.${spring.cloud.nacos.config.file-extension}
         username: ${spring.cloud.nacos.discovery.username}
         password: ${spring.cloud.nacos.discovery.password}
-  profiles:
-    active: dev

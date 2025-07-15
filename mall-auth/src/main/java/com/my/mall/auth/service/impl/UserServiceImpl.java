@@ -103,9 +103,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
         Map<String, String> map = new HashMap<>();
         map.put("client_id", "Ov23lixnp1q7Q7Rj3ryY");
         map.put("client_secret", "6b7ec5286d1b14e1557915afa25f0d778611ce85");
-        map.put("state", "javaboy");
+        map.put("state", "haole");
         map.put("code", code);
-        map.put("redirect_uri", "http://localhost:8001/api/auth/callback");
+        map.put("redirect_uri", "https://14.215.41.145:24692/api/auth/callback");
         disableSslVerification();
         Map<String,String> resp = restTemplate.postForObject("https://github.com/login/oauth/access_token", map, Map.class);
         HttpHeaders httpheaders = new HttpHeaders();

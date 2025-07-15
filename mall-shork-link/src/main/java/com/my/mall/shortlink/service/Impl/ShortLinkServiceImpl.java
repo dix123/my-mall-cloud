@@ -50,6 +50,7 @@ import org.redisson.api.RReadWriteLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -59,10 +60,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
+import java.net.*;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -82,16 +80,12 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, LinkDO> i
     @Value("${short-link.domain.default}")
     private String shortLinkDomain;
     @Autowired
-    @Resource(name = "shortUriCreateBloomFilter")
+    @Qualifier("shortUriCreateBloomFilter")
     private RBloomFilter<String> shortUrlCreateBloomFilter;
-    @Autowired
-    private RBloomFilter<String> originUrlBloomFilter;
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
     @Autowired
     private RocketMQTemplate shortLinkStatusTemplate;
-    @Autowired
-    private RBloomFilter<String> shortUriCreateBloomFilter;
     @Autowired
     private RedissonClient redissonClient;
     @Autowired
@@ -193,19 +187,26 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, LinkDO> i
     @Override
     @SneakyThrows(IOException.class)
     public void redirectUrl(String ShortUrl, HttpServletRequest request, HttpServletResponse response) {
-        String fullShortUrl = request.getRequestURL().toString();
+        String fullShortUrl = StrBuilder.create(HttpConstant.PREFIX + shortLinkDomain)
+                .append("/")
+                .append(ShortUrl)
+                .toString();
+        log.info(fullShortUrl);
         String originalUrl = stringRedisTemplate.opsForValue().get(String.format(ShortLinkCache.SHORT_LINK_GOTO_KEY, fullShortUrl));
         if (StrUtil.isNotBlank(originalUrl)) {
             shortLinkStatusCount(fullShortUrl, request, response);
             response.sendRedirect(originalUrl);
             return;
         }
-        boolean contains = shortUriCreateBloomFilter.contains(fullShortUrl);
+        log.info("缓存没有");
+        boolean contains = shortUrlCreateBloomFilter.contains(fullShortUrl);
         if (!contains) {
+            log.info("布隆过滤器没有");
             throw new ApiException(ErrorCode.NULL_SHORT_URL);
         }
         Boolean hasMember = stringRedisTemplate.opsForSet().isMember(ShortLinkCache.SHORT_LINK_IS_NULL_KEY, fullShortUrl);
         if (BooleanUtil.isTrue(hasMember)) {
+            log.info("null表有");
             throw new ApiException(ErrorCode.NULL_SHORT_URL);
         }
         RLock lock = redissonClient.getLock(String.format(ShortLinkCache.GO_TO_SHORT_LINK_LOCK, fullShortUrl));
@@ -241,7 +242,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, LinkDO> i
                         .findFirst().orElse(null);
             } else {
                 while (true) {
-                    Thread.sleep(1000);
+                    Thread.sleep(200);
                     shortLinkGotoDO = shortLinkGotoMapper.selectOne(wrapper);
                     if (shortLinkGotoDO == null) {
                         stringRedisTemplate.opsForValue().set(String.format(ShortLinkCache.SHORT_LINK_IS_NULL_KEY, fullShortUrl), fullShortUrl, ShortLinkCache.NULL_KEY_OUT_TIME, TimeUnit.MINUTES);
@@ -465,20 +466,63 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, LinkDO> i
     }
 
 
-    @SneakyThrows
-    private String getFavicon(String url) {
-        URL targetUrl = new URL(url);
-        HttpURLConnection connection = (HttpURLConnection) targetUrl.openConnection();
-        connection.setRequestMethod("GET");
-        connection.connect();
-        int responseCode = connection.getResponseCode();
-        if (HttpURLConnection.HTTP_OK == responseCode) {
-            Document document = Jsoup.connect(url).get();
+//    @SneakyThrows
+//    private String getFavicon(String url) {
+//        URL targetUrl = new URL(url);
+//        HttpURLConnection connection = (HttpURLConnection) targetUrl.openConnection();
+//        connection.setRequestMethod("GET");
+//        connection.connect();
+//        int responseCode = connection.getResponseCode();
+//        if (HttpURLConnection.HTTP_OK == responseCode) {
+//            Document document = Jsoup.connect(url).get();
+//            Element faviconLink = document.select("link[rel~=(?i)^(shortcut )?icon]").first();
+//            if (faviconLink != null) {
+//                return faviconLink.attr("abs:href");
+//            }
+//        }
+//        return null;
+//    }
+
+        private String getFavicon(String url) {
+        // 验证URL合法性
+        if (url == null || !url.startsWith("http")) {
+            log.info("无效的URL: {}", url);
+            return null;
+        }
+        try {
+            // 使用Jsoup进行连接，统一处理
+            Document document = Jsoup.connect(url)
+                    .timeout(5000)
+                    .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
+                    .followRedirects(true)
+                    .get();
+            // 查找favicon链接
             Element faviconLink = document.select("link[rel~=(?i)^(shortcut )?icon]").first();
             if (faviconLink != null) {
-                return faviconLink.attr("abs:href");
+                String faviconUrl = faviconLink.attr("abs:href");
+                log.debug("找到favicon: {}", faviconUrl);
+                return faviconUrl;
             }
+            // 如果页面中没有明确的favicon链接，尝试默认路径
+            URL baseUrl = new URL(url);
+            String defaultFavicon = baseUrl.getProtocol() + "://" + baseUrl.getHost() + "/favicon.ico";
+            log.debug("尝试默认favicon路径: {}", defaultFavicon);
+            // 检查默认favicon是否存在
+            HttpURLConnection connection = (HttpURLConnection) new URL(defaultFavicon).openConnection();
+            connection.setRequestMethod("HEAD");
+            connection.setConnectTimeout(3000);
+            connection.setReadTimeout(3000);
+            if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                return defaultFavicon;
+            }
+        } catch (SocketTimeoutException e) {
+            log.warn("获取favicon超时 - URL: {}", url, e);
+        } catch (IOException e) {
+            log.error("获取favicon时发生IO异常 - URL: {}", url, e);
+        } catch (Exception e) {
+            log.error("获取favicon时发生意外错误 - URL: {}", url, e);
         }
+        // 如果所有尝试都失败，返回默认图标
         return null;
     }
 
