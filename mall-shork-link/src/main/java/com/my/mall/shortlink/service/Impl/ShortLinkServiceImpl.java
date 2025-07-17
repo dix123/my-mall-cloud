@@ -334,7 +334,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, LinkDO> i
                         .delTime(System.currentTimeMillis())
                         .build();
                 updateLinkDO.setDelFlag(2);
-
+                baseMapper.update(updateLinkDO, updateWrapper);
                 LinkDO shortLinkDO = LinkDO.builder()
                         .domain(shortLinkDomain)
                         .originUrl(param.getOriginUrl())
@@ -363,6 +363,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, LinkDO> i
                         .gid(param.getGid())
                         .build();
                 shortLinkGotoMapper.insert(shortLinkGotoDO);
+                updateLinkDO.setDelFlag(1);
                 baseMapper.update(updateLinkDO, updateWrapper);
             } finally {
                 lock.unlock();
