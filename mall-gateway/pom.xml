@@ -47,11 +47,18 @@
             <groupId>com.alibaba.cloud</groupId>
             <artifactId>spring-cloud-starter-alibaba-sentinel</artifactId>
         </dependency>
+        <!--Sentinel 整合 Gateway -->
+        <dependency>
+            <groupId>com.alibaba.cloud</groupId>
+            <artifactId>spring-cloud-alibaba-sentinel-gateway</artifactId>
+        </dependency>
+
+        <!-- 通过nacos持久化流控规则 -->
         <dependency>
             <groupId>com.alibaba.csp</groupId>
-            <artifactId>sentinel-spring-cloud-gateway-adapter</artifactId>
-            <version>1.8.6</version>
+            <artifactId>sentinel-datasource-nacos</artifactId>
         </dependency>
+
     </dependencies>
 
     <build>

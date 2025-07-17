@@ -7,6 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class MallGatewayApplication {
 
     public static void main(String[] args) {
+        System.setProperty("csp.sentinel.app.type", "1");
         SpringApplication.run(MallGatewayApplication.class, args);
     }
 
