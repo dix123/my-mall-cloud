@@ -232,28 +232,31 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, LinkDO> i
             LambdaQueryWrapper<LinkDO> linkDoLambdaQueryWrapper = Wrappers.lambdaQuery(LinkDO.class)
                     .eq(LinkDO::getGid, shortLinkGotoDO.getGid())
                     .eq(LinkDO::getFullShortUrl, fullShortUrl)
-                    .eq(LinkDO::getEnableStatus, 1);
+                    .eq(LinkDO::getEnableStatus, 1)
+                    .ne(LinkDO::getDelFlag, 1);
             List<LinkDO> linkDOList = shortLinkMapper.selectList(linkDoLambdaQueryWrapper);
             LinkDO linkDO = linkDOList.stream()
-                    .filter(item -> item.getDelFlag().equals(1))
+                    .filter(item -> item.getDelFlag().equals(0))
+                    .findFirst().orElse(null);
+            LinkDO moveLinkDO = linkDOList.stream()
+                    .filter(item -> item.getDelFlag().equals(2))
                     .findFirst().orElse(null);
             // 没有删除的情况下
-            if (linkDO == null) {
-                linkDO = linkDOList.stream()
-                        .filter(item -> item.getDelFlag().equals(0))
-                        .findFirst().orElse(null);
-                if (linkDO == null) {
+            if (linkDO == null && moveLinkDO != null) {
+                while (true) {
+                    Thread.sleep(50);
                     shortLinkGotoDO = shortLinkGotoMapper.selectOne(wrapper);
                     if (shortLinkGotoDO == null) {
                         stringRedisTemplate.opsForValue().set(String.format(ShortLinkCache.SHORT_LINK_IS_NULL_KEY, fullShortUrl), fullShortUrl, ShortLinkCache.NULL_KEY_OUT_TIME, TimeUnit.MINUTES);
                         throw new ApiException(ErrorCode.NULL_SHORT_URL);
                     }
-                    linkDoLambdaQueryWrapper = Wrappers.lambdaQuery(LinkDO.class)
-                            .eq(LinkDO::getGid, shortLinkGotoDO.getGid())
-                            .eq(LinkDO::getFullShortUrl, fullShortUrl)
-                            .eq(LinkDO::getEnableStatus, 1)
-                            .ne(LinkDO::getDelFlag, 1);
-                    linkDO = shortLinkMapper.selectOne(linkDoLambdaQueryWrapper);
+                    linkDOList = shortLinkMapper.selectList(linkDoLambdaQueryWrapper);
+                    linkDO = linkDOList.stream()
+                            .filter(item -> item.getDelFlag().equals(0))
+                            .findFirst().orElse(null);
+                    if (linkDO != null) {
+                        break;
+                    }
                 }
             }
             if (linkDO == null || (linkDO.getValidDate() != null && linkDO.getValidDate().isBefore(LocalDateTime.now()))) {
@@ -264,6 +267,8 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, LinkDO> i
             stringRedisTemplate.opsForValue().set(String.format(ShortLinkCache.SHORT_LINK_GOTO_KEY, fullShortUrl), linkDO.getOriginUrl(), LinkUtil.getCacheTime(linkDO.getValidDate()) * percent / 10, TimeUnit.MINUTES);
             shortLinkStatusCount(fullShortUrl, request, response);
             response.sendRedirect(linkDO.getOriginUrl());
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         } finally {
             lock.unlock();
         }
@@ -363,8 +368,6 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, LinkDO> i
                         .gid(param.getGid())
                         .build();
                 shortLinkGotoMapper.insert(shortLinkGotoDO);
-                updateLinkDO.setDelFlag(1);
-                baseMapper.update(updateLinkDO, updateWrapper);
             } finally {
                 lock.unlock();
             }
