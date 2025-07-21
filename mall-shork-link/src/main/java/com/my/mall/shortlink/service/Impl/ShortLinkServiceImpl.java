@@ -241,7 +241,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, LinkDO> i
             LinkDO moveLinkDO = linkDOList.stream()
                     .filter(item -> item.getDelFlag().equals(2))
                     .findFirst().orElse(null);
-            // 没有删除的情况下
+            // 知道迁移了，但是迁移可能还没完成
             if (linkDO == null && moveLinkDO != null) {
                 while (true) {
                     Thread.sleep(50);
