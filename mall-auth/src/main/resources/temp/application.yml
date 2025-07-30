@@ -4,13 +4,13 @@ spring:
     url: jdbc:shardingsphere:classpath:shardingsphere-config-${database.env:dev}.yaml
   data:
     redis:
-      host: 192.168.1.111
+      host: 192.168.10.111
       port: 6379
       password: 123456
   cloud:
     nacos:
       discovery:
-        server-addr: 192.168.1.111:8848
+        server-addr: 192.168.10.111:8848
 
 feign:
   inside:

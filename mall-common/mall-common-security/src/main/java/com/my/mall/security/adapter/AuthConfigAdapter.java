@@ -15,6 +15,8 @@ public interface AuthConfigAdapter {
      */
     String unCheck();
 
+    String unCheckIp();
+
     /**
      * 匹配的路径
      * @return

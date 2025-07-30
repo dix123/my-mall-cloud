@@ -39,11 +39,17 @@ public class DefaultAuthConfigAdapter implements AuthConfigAdapter{
     private static final String LOGIN = "/api/short-link/admin/v1/user/login";
     private static final String OTHER_LOGIN = "/api/auth/callback";
 
-    private static final String GOTO = "14.215.41.146";
+    private static final String GOTO = "frp-kit.com";
+    private static final String GOTO_IP = "14.215.41.146";
 
     @Override
     public String unCheck() {
         return GOTO;
+    }
+
+    @Override
+    public String unCheckIp() {
+        return GOTO_IP;
     }
 
     @Override

@@ -72,7 +72,7 @@ public class AuthFilter implements Filter {
             }
         }
 
-        if (req.getServerName().contains(authConfigAdapter.unCheck())) {
+        if (req.getServerName().contains(authConfigAdapter.unCheck()) || req.getServerName().contains(authConfigAdapter.unCheckIp())) {
             filterChain.doFilter(req, resp);
             return;
         }

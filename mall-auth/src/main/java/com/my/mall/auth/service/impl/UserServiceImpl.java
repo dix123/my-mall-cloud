@@ -18,6 +18,7 @@ import com.my.mall.common.core.api.CommonResult;
 import com.my.mall.common.core.api.ErrorCode;
 import com.my.mall.common.core.exception.ApiException;
 import com.my.mall.auth.model.UserDO;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -36,6 +37,7 @@ import java.util.Map;
  * @Date: 2025/4/28
  **/
 @Service
+@Slf4j
 public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements UserService {
     private static final String USER_NOT_FOUND_SECRET = "USER_NOT_FOUND_SECRET";
     private static String userNotFoundEncodedPassword;
@@ -71,6 +73,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
     @Override
     public AccessTokenAndUserNameDTO otherLogin(String code) {
         Map<Object, Object> remoteUserInfo = getRemoteUserInfo(code);
+        log.info(remoteUserInfo.toString());
         String userName = (String) remoteUserInfo.get("login");
         CommonResult<UserRespDTO> userResult = userFeignClient.getUser(userName);
         UserRespDTO userInfo = null;
@@ -79,6 +82,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
         } else {
             userInfo = userResult.getData();
         }
+        log.info(userInfo.toString());
         TokenInfoBO tokenInfoBO = tokenStore.storeAndGet(BeanUtil.toBean(userInfo, UserInfoInTokenBO.class));
         AccessTokenAndUserNameDTO rs = AccessTokenAndUserNameDTO.builder()
                 .username(userInfo.getUsername())
@@ -105,7 +109,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
         map.put("client_secret", "6b7ec5286d1b14e1557915afa25f0d778611ce85");
         map.put("state", "haole");
         map.put("code", code);
-        map.put("redirect_uri", "https://14.215.41.145:24692/api/auth/callback");
+        map.put("redirect_uri", "https://frp-lab.com:24692/api/auth/callback");
         disableSslVerification();
         Map<String,String> resp = restTemplate.postForObject("https://github.com/login/oauth/access_token", map, Map.class);
         HttpHeaders httpheaders = new HttpHeaders();

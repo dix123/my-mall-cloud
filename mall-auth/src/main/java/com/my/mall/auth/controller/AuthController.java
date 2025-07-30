@@ -54,22 +54,31 @@ public class AuthController {
     }
 
     @GetMapping("/api/auth/callback")
+    @CrossOrigin(
+            origins = {"https://yd.frp-pen.com:11550", "http://localhost:8080"},
+            allowCredentials = "true",
+            maxAge = 3600
+    )
     public CommonResult<Void> otherLogin(@RequestParam("code") String code, HttpServletResponse response) throws IOException {
         log.info(code);
         AccessTokenAndUserNameDTO accessTokenAndUserNameDTO = userService.otherLogin(code);
         Cookie cookie = new Cookie("token", accessTokenAndUserNameDTO.getAccessToken());
         cookie.setPath("/callback");
         cookie.setHttpOnly(false);
-        cookie.setSecure(true);
+        cookie.setSecure(false);
+        cookie.setDomain("yd.frp-pen.com");
         cookie.setMaxAge(3600);
         Cookie usernameCookie = new Cookie("username", accessTokenAndUserNameDTO.getUsername());
         usernameCookie.setPath("/callback");
         usernameCookie.setHttpOnly(false);
-        usernameCookie.setSecure(true);
+        usernameCookie.setSecure(false);
+        usernameCookie.setDomain("yd.frp-pen.com");
         usernameCookie.setMaxAge(3600);
         response.addCookie(cookie);
         response.addCookie(usernameCookie);
-        response.sendRedirect("https://14.215.41.145:11550/callback");
+        log.info("回调:" + accessTokenAndUserNameDTO.toString());
+        response.sendRedirect("https://yd.frp-pen.com:11550/callback?username=" + accessTokenAndUserNameDTO.getUsername()
+         + "&token=" + accessTokenAndUserNameDTO.getAccessToken());
         return CommonResult.success();
     }
 
